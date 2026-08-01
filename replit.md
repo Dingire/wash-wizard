@@ -1,6 +1,6 @@
-# [Project name]
+# Mig Flares Car Wash
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Admin portal for Mig Flares Car Wash — manage transactions, issue receipts, and track daily/weekly/monthly revenue.
 
 ## Run & Operate
 

@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Mig Flares Car Wash Management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: services
+    description: Car wash service packages
+  - name: transactions
+    description: Car wash transactions and receipts
+  - name: reports
+    description: Revenue reports
 paths:
   /healthz:
     get:
@@ -24,6 +30,260 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /services:
+    get:
+      operationId: listServices
+      tags: [services]
+      summary: List all car wash services
+      responses:
+        "200":
+          description: List of services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Service"
+    post:
+      operationId: createService
+      tags: [services]
+      summary: Create a new service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceInput"
+      responses:
+        "201":
+          description: Created service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+
+  /services/{id}:
+    get:
+      operationId: getService
+      tags: [services]
+      summary: Get a service by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateService
+      tags: [services]
+      summary: Update a service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceUpdate"
+      responses:
+        "200":
+          description: Updated service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteService
+      tags: [services]
+      summary: Delete a service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /transactions:
+    get:
+      operationId: listTransactions
+      tags: [transactions]
+      summary: List transactions
+      parameters:
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Filter by date (YYYY-MM-DD)
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 50
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      operationId: createTransaction
+      tags: [transactions]
+      summary: Create a new transaction (issue receipt)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "201":
+          description: Created transaction with receipt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+
+  /transactions/{id}:
+    get:
+      operationId: getTransaction
+      tags: [transactions]
+      summary: Get a transaction by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteTransaction
+      tags: [transactions]
+      summary: Void/delete a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /reports/summary:
+    get:
+      operationId: getReportSummary
+      tags: [reports]
+      summary: Get dashboard summary (today's stats + totals)
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportSummary"
+
+  /reports/daily:
+    get:
+      operationId: getDailyReport
+      tags: [reports]
+      summary: Get daily revenue report
+      parameters:
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Date (YYYY-MM-DD), defaults to today
+      responses:
+        "200":
+          description: Daily report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyReport"
+
+  /reports/weekly:
+    get:
+      operationId: getWeeklyReport
+      tags: [reports]
+      summary: Get weekly revenue report
+      parameters:
+        - name: weekStart
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Week start date (YYYY-MM-DD), defaults to this week's Monday
+      responses:
+        "200":
+          description: Weekly report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeeklyReport"
+
+  /reports/monthly:
+    get:
+      operationId: getMonthlyReport
+      tags: [reports]
+      summary: Get monthly revenue report
+      parameters:
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: number
+            description: Year (defaults to current year)
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: number
+            description: Month 1-12 (defaults to current month)
+      responses:
+        "200":
+          description: Monthly report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthlyReport"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +294,209 @@ components:
       required:
         - status
 
+    Service:
+      type: object
+      required: [id, name, price, description, isActive, createdAt]
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+
+    ServiceInput:
+      type: object
+      required: [name, price, description]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        isActive:
+          type: boolean
+
+    ServiceUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        isActive:
+          type: boolean
+
+    Transaction:
+      type: object
+      required: [id, receiptNumber, serviceId, serviceName, servicePrice, customerName, vehiclePlate, vehicleType, amountPaid, paymentMethod, createdAt]
+      properties:
+        id:
+          type: number
+        receiptNumber:
+          type: string
+        serviceId:
+          type: number
+        serviceName:
+          type: string
+        servicePrice:
+          type: number
+        customerName:
+          type: string
+        vehiclePlate:
+          type: string
+        vehicleType:
+          type: string
+        amountPaid:
+          type: number
+        paymentMethod:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    TransactionInput:
+      type: object
+      required: [serviceId, customerName, vehiclePlate, vehicleType, amountPaid, paymentMethod]
+      properties:
+        serviceId:
+          type: number
+        customerName:
+          type: string
+          minLength: 1
+        vehiclePlate:
+          type: string
+          minLength: 1
+        vehicleType:
+          type: string
+        amountPaid:
+          type: number
+          minimum: 0
+        paymentMethod:
+          type: string
+        notes:
+          type: string
+
+    RevenueByDay:
+      type: object
+      required: [date, totalRevenue, transactionCount]
+      properties:
+        date:
+          type: string
+        totalRevenue:
+          type: number
+        transactionCount:
+          type: number
+
+    RevenueByService:
+      type: object
+      required: [serviceId, serviceName, totalRevenue, transactionCount]
+      properties:
+        serviceId:
+          type: number
+        serviceName:
+          type: string
+        totalRevenue:
+          type: number
+        transactionCount:
+          type: number
+
+    ReportSummary:
+      type: object
+      required: [todayRevenue, todayTransactions, weekRevenue, weekTransactions, monthRevenue, monthTransactions, recentTransactions, topServices]
+      properties:
+        todayRevenue:
+          type: number
+        todayTransactions:
+          type: number
+        weekRevenue:
+          type: number
+        weekTransactions:
+          type: number
+        monthRevenue:
+          type: number
+        monthTransactions:
+          type: number
+        recentTransactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+        topServices:
+          type: array
+          items:
+            $ref: "#/components/schemas/RevenueByService"
+
+    DailyReport:
+      type: object
+      required: [date, totalRevenue, transactionCount, byService, transactions]
+      properties:
+        date:
+          type: string
+        totalRevenue:
+          type: number
+        transactionCount:
+          type: number
+        byService:
+          type: array
+          items:
+            $ref: "#/components/schemas/RevenueByService"
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+
+    WeeklyReport:
+      type: object
+      required: [weekStart, weekEnd, totalRevenue, transactionCount, byDay, byService]
+      properties:
+        weekStart:
+          type: string
+        weekEnd:
+          type: string
+        totalRevenue:
+          type: number
+        transactionCount:
+          type: number
+        byDay:
+          type: array
+          items:
+            $ref: "#/components/schemas/RevenueByDay"
+        byService:
+          type: array
+          items:
+            $ref: "#/components/schemas/RevenueByService"
+
+    MonthlyReport:
+      type: object
+      required: [year, month, totalRevenue, transactionCount, byDay, byService]
+      properties:
+        year:
+          type: number
+        month:
+          type: number
+        totalRevenue:
+          type: number
+        transactionCount:
+          type: number
+        byDay:
+          type: array
+          items:
+            $ref: "#/components/schemas/RevenueByDay"
+        byService:
+          type: array
+          items:
+            $ref: "#/components/schemas/RevenueByService"

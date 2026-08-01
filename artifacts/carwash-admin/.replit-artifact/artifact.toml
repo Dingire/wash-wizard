@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Mig Flares Car Wash Admin"
+version = "1.0.0"
+id = "artifacts/carwash-admin"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22526
+
+[services.development]
+run = "pnpm --filter @workspace/carwash-admin run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/carwash-admin", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/carwash-admin/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22526"
+BASE_PATH = "/"

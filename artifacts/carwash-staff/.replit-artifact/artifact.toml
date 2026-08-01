@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/carwash-staff/"
+title = "Mig Flares Staff App"
+description = "Mobile app for Mig Flares Car Wash staff to log transactions on the go"
+version = "1.0.0"
+id = "artifacts/carwash-staff"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/carwash-staff/" ]
+localPort = 21724
+
+[services.development]
+run = "pnpm --filter @workspace/carwash-staff run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/carwash-staff", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/carwash-staff", "run", "serve" ]
+
+[services.env]
+PORT = "21724"
+BASE_PATH = "/carwash-staff/"
