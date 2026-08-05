@@ -7,8 +7,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 # Copy entire repo into the image
 COPY . ./
 
-# Prefetch packages so pnpm can enumerate builds, then auto-approve them
-# (non-fatal if approve-builds is a no-op in some environments), then install.
+# Ensure pnpm CLI is available via corepack, then prefetch packages so pnpm
+# can enumerate builds, auto-approve them, and install.
+RUN corepack prepare pnpm@latest --activate
 RUN corepack pnpm fetch --no-frozen-lockfile || true
 RUN corepack pnpm approve-builds -y || true
 RUN corepack pnpm install --no-frozen-lockfile
