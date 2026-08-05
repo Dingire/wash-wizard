@@ -13,7 +13,7 @@ RUN corepack prepare pnpm@latest --activate
 RUN corepack pnpm fetch --no-frozen-lockfile || true
 RUN corepack pnpm approve-builds -y || true
 RUN corepack pnpm install --no-frozen-lockfile
-RUN corepack pnpm run build --prefix artifacts/api-server
+RUN cd artifacts/api-server && corepack pnpm run build
 
 WORKDIR /app/artifacts/api-server
 EXPOSE 5000
