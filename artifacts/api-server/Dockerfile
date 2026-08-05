@@ -11,7 +11,7 @@ COPY . ./
 # can enumerate builds, auto-approve them, and install.
 RUN corepack prepare pnpm@latest --activate
 RUN corepack pnpm fetch --no-frozen-lockfile || true
-RUN corepack pnpm approve-builds -y || true
+RUN corepack pnpm approve-builds --all || true
 RUN corepack pnpm install --no-frozen-lockfile
 RUN cd artifacts/api-server && corepack pnpm run build
 
