@@ -16,7 +16,9 @@
     "ios": {
       "supportsTablet": false
     },
-    "android": {},
+    "android": {
+      "package": "com.dingire.carwashstaff"
+    },
     "web": {
       "favicon": "./assets/images/favicon.png"
     },
@@ -33,6 +35,14 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://replit.com/"
+      },
+      "eas": {
+        "projectId": "746e730e-cd40-4fce-b82d-9d681eec3c16"
+      }
     }
   }
 }

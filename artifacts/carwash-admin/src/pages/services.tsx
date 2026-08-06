@@ -59,6 +59,7 @@ export default function Services() {
   const queryClient = useQueryClient();
   
   const { data: services, isLoading } = useListServices();
+  const servicesList = Array.isArray(services) ? services : [];
   const createService = useCreateService();
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
@@ -294,7 +295,7 @@ export default function Services() {
             <div className="p-8 text-center text-sm text-muted-foreground">
               Loading services...
             </div>
-          ) : !services || services.length === 0 ? (
+          ) : servicesList.length === 0 ? (
             <div className="p-12 text-center">
               <p className="text-sm text-muted-foreground mb-4">
                 No services created yet
@@ -305,7 +306,7 @@ export default function Services() {
             </div>
           ) : (
             <div className="divide-y divide-card-border">
-              {services.map((service) => (
+              {servicesList.map((service) => (
                 <div
                   key={service.id}
                   className="p-6 flex items-start justify-between hover:bg-muted/20 transition-colors"

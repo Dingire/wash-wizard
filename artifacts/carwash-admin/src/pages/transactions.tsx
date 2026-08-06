@@ -14,6 +14,8 @@ export default function Transactions() {
     dateFilter ? { date: dateFilter } : undefined
   );
 
+  const transactionList = Array.isArray(transactions) ? transactions : [];
+
   return (
     <div className="p-8 min-h-screen">
       <PageHeader
@@ -103,7 +105,7 @@ export default function Transactions() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-card-border">
-                  {transactions.map((transaction) => (
+                  {transactionList.map((transaction) => (
                     <tr
                       key={transaction.id}
                       className="hover:bg-muted/20 transition-colors"

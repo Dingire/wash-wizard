@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Platform } from 'react-native';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -16,7 +17,17 @@ import * as SplashScreen from 'expo-splash-screen';
 import { setBaseUrl } from '@workspace/api-client-react';
 
 // Configure API base URL — must be called before any React rendering
-setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
+const expoDomain = process.env.EXPO_PUBLIC_DOMAIN;
+const apiBaseUrl = expoDomain
+  ? `https://${expoDomain}`
+  : process.env.API_BASE_URL || null;
+
+if (apiBaseUrl) {
+  setBaseUrl(apiBaseUrl);
+} else if (typeof __DEV__ !== 'undefined' && __DEV__) {
+  const devUrl = Platform.OS === 'android' ? 'http://10.0.2.2:5000' : 'http://localhost:5000';
+  setBaseUrl(devUrl);
+}
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

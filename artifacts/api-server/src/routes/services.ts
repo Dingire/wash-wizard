@@ -26,6 +26,8 @@ router.get("/services", async (_req, res): Promise<void> => {
         ...s,
         price: parseFloat(s.price),
         isActive: s.isActive,
+        createdAt: s.createdAt instanceof Date ? s.createdAt.toISOString() : String(s.createdAt),
+        updatedAt: s.updatedAt instanceof Date ? s.updatedAt.toISOString() : String(s.updatedAt),
       })),
     ),
   );
@@ -50,6 +52,8 @@ router.post("/services", async (req, res): Promise<void> => {
     CreateServiceResponse.parse({
       ...service,
       price: parseFloat(service.price),
+      createdAt: service.createdAt instanceof Date ? service.createdAt.toISOString() : String(service.createdAt),
+      updatedAt: service.updatedAt instanceof Date ? service.updatedAt.toISOString() : String(service.updatedAt),
     }),
   );
 });
@@ -68,7 +72,14 @@ router.get("/services/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Service not found" });
     return;
   }
-  res.json(GetServiceResponse.parse({ ...service, price: parseFloat(service.price) }));
+  res.json(
+    GetServiceResponse.parse({
+      ...service,
+      price: parseFloat(service.price),
+      createdAt: service.createdAt instanceof Date ? service.createdAt.toISOString() : String(service.createdAt),
+      updatedAt: service.updatedAt instanceof Date ? service.updatedAt.toISOString() : String(service.updatedAt),
+    }),
+  );
 });
 
 router.patch("/services/:id", async (req, res): Promise<void> => {
@@ -97,7 +108,14 @@ router.patch("/services/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Service not found" });
     return;
   }
-  res.json(UpdateServiceResponse.parse({ ...service, price: parseFloat(service.price) }));
+  res.json(
+    UpdateServiceResponse.parse({
+      ...service,
+      price: parseFloat(service.price),
+      createdAt: service.createdAt instanceof Date ? service.createdAt.toISOString() : String(service.createdAt),
+      updatedAt: service.updatedAt instanceof Date ? service.updatedAt.toISOString() : String(service.updatedAt),
+    }),
+  );
 });
 
 router.delete("/services/:id", async (req, res): Promise<void> => {

@@ -1,68 +1,68 @@
 /**
- * Design tokens synced from the carwash-admin sibling artifact (index.css).
- * Primary brand: cyan #10D6F9 on dark navy surfaces.
+ * Design tokens synced from the Wash Wizard brand logo.
+ * Primary brand: orange #FF8400 on dark slate #2E3136 surfaces.
  */
 
 const colors = {
   light: {
-    text: '#191E2E',
-    tint: '#10D6F9',
+    text: '#2E3136',
+    tint: '#FF8400',
 
-    background: '#F4F6FA',
-    foreground: '#191E2E',
+    background: '#F7F8FA',
+    foreground: '#2E3136',
 
     card: '#FFFFFF',
-    cardForeground: '#191E2E',
+    cardForeground: '#2E3136',
 
-    primary: '#10D6F9',
-    primaryForeground: '#191E2E',
+    primary: '#FF8400',
+    primaryForeground: '#FFFFFF',
 
-    secondary: '#ECF0F6',
-    secondaryForeground: '#191E2E',
+    secondary: '#FFF0DE',
+    secondaryForeground: '#2E3136',
 
-    muted: '#ECF0F6',
+    muted: '#F0F1F3',
     mutedForeground: '#6B7280',
 
-    accent: '#10D6F9',
-    accentForeground: '#191E2E',
+    accent: '#FF9B33',
+    accentForeground: '#2E3136',
 
     destructive: '#EF4444',
     destructiveForeground: '#FFFFFF',
 
-    border: '#D5DAE5',
-    input: '#D5DAE5',
+    border: '#E2E4E8',
+    input: '#E2E4E8',
 
     success: '#22C55E',
     successForeground: '#FFFFFF',
   },
 
   dark: {
-    text: '#D4D8E8',
-    tint: '#10D6F9',
+    text: '#E7E8EC',
+    tint: '#FF8A1E',
 
-    background: '#1E2235',
-    foreground: '#D4D8E8',
+    background: '#26282B',
+    foreground: '#E7E8EC',
 
-    card: '#252A3E',
-    cardForeground: '#D4D8E8',
+    card: '#2E3136',
+    cardForeground: '#E7E8EC',
 
-    primary: '#10D6F9',
-    primaryForeground: '#191E2E',
+    primary: '#FF8A1E',
+    primaryForeground: '#FFFFFF',
 
-    secondary: '#2A2F45',
-    secondaryForeground: '#D4D8E8',
+    secondary: '#383B41',
+    secondaryForeground: '#E7E8EC',
 
-    muted: '#2A2F45',
-    mutedForeground: '#8892A4',
+    muted: '#383B41',
+    mutedForeground: '#9BA0A8',
 
-    accent: '#10D6F9',
-    accentForeground: '#191E2E',
+    accent: '#FF8A1E',
+    accentForeground: '#FFFFFF',
 
     destructive: '#EF4444',
     destructiveForeground: '#FFFFFF',
 
-    border: '#2F3650',
-    input: '#2F3650',
+    border: '#3F434A',
+    input: '#3F434A',
 
     success: '#22C55E',
     successForeground: '#FFFFFF',

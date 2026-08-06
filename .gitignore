@@ -47,3 +47,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Railway local IaC pack artifacts
+tmp-railway-pack/

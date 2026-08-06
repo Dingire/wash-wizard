@@ -39,6 +39,9 @@ export default function Dashboard() {
     );
   }
 
+  const recentTransactions = summary.recentTransactions ?? [];
+  const topServices = summary.topServices ?? [];
+
   return (
     <div className="p-8 min-h-screen">
       <PageHeader 
@@ -86,13 +89,13 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            {summary.recentTransactions.length === 0 ? (
+            {recentTransactions.length === 0 ? (
               <div className="p-8 text-center text-sm text-muted-foreground">
                 No transactions yet
               </div>
             ) : (
               <div className="divide-y divide-card-border">
-                {summary.recentTransactions.map((transaction) => (
+                {recentTransactions.map((transaction) => (
                   <Link
                     key={transaction.id}
                     href={`/transactions/${transaction.id}`}
@@ -137,13 +140,13 @@ export default function Dashboard() {
             <CardTitle className="text-lg font-semibold">Top Services</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {summary.topServices.length === 0 ? (
+            {topServices.length === 0 ? (
               <div className="p-8 text-center text-sm text-muted-foreground">
                 No services data
               </div>
             ) : (
               <div className="divide-y divide-card-border">
-                {summary.topServices.map((service) => (
+                {topServices.map((service) => (
                   <div 
                     key={service.serviceId} 
                     className="flex items-center justify-between p-4"
