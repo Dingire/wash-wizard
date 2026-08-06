@@ -4,13 +4,16 @@ import * as schema from "./schema";
 
 const { Pool } = pg;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  // Do NOT throw at module load: a missing DATABASE_URL would crash the API
+  // before it can listen, making the whole service return 502. Instead we
+  // boot anyway and let data queries fail with a clear error at request time.
+  console.warn(
+    "DATABASE_URL is not set. The API will start, but database-backed routes will fail.",
   );
 }
-
-const connectionString = process.env.DATABASE_URL;
 
 // Railway Postgres requires TLS. Enable SSL when the connection string or
 // environment asks for it (sslmode=require / PGSSLMODE=require).
