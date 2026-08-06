@@ -1,6 +1,8 @@
-import { defineRailway, project, service, postgres, preserve } from "railway/iac";
+import { defineRailway, project, service, postgres, ref } from "railway/iac";
 
 export default defineRailway(() => {
+  const postgresDb = postgres("Postgres");
+
   const api = service("api", {
     // Deploy via the root Dockerfile. It already builds the backend
     // (RUN cd artifacts/api-server && corepack pnpm run build) and starts it
@@ -14,13 +16,12 @@ export default defineRailway(() => {
     },
     variables: {
       PORT: "5000",
-      DATABASE_URL: preserve(),
+      DATABASE_URL: ref(postgresDb, "DATABASE_URL"),
+      PGSSLMODE: "require",
       PNPM_CONFIG_FROZEN_LOCKFILE: "false",
       NPM_CONFIG_FROZEN_LOCKFILE: "false",
     },
   });
-
-  const postgresDb = postgres("Postgres");
 
   const admin = service("admin", {
     // SPA dashboard served statically via nginx (artifacts/carwash-admin/Dockerfile).
