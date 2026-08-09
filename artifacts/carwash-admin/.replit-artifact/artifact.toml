@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Mig Flares Car Wash Admin"
+title = "U & ME Car Wash Admin"
 version = "1.0.0"
 id = "artifacts/carwash-admin"
 router = "path"

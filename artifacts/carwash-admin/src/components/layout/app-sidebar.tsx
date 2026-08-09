@@ -23,7 +23,7 @@ export function AppSidebar() {
     <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col min-h-screen">
       <div className="p-6 border-b border-sidebar-border">
         <h1 className="text-xl font-bold text-sidebar-foreground tracking-tight">
-          Mig Flares
+          U &amp; ME Car Wash
         </h1>
         <p className="text-xs text-sidebar-foreground/60 mt-1 font-medium">
           Car Wash Admin

@@ -1,68 +1,68 @@
 /**
- * Design tokens synced from the Wash Wizard brand logo.
- * Primary brand: orange #FF8400 on dark slate #2E3136 surfaces.
+ * Design tokens for U & ME Car Wash.
+ * Brand: bright white surfaces with a vivid red primary (#E41717).
  */
 
 const colors = {
   light: {
-    text: '#2E3136',
-    tint: '#FF8400',
+    text: '#1A1A1A',
+    tint: '#E41717',
 
-    background: '#F7F8FA',
-    foreground: '#2E3136',
+    background: '#FFFFFF',
+    foreground: '#1A1A1A',
 
     card: '#FFFFFF',
-    cardForeground: '#2E3136',
+    cardForeground: '#1A1A1A',
 
-    primary: '#FF8400',
+    primary: '#E41717',
     primaryForeground: '#FFFFFF',
 
-    secondary: '#FFF0DE',
-    secondaryForeground: '#2E3136',
+    secondary: '#FFF5F5',
+    secondaryForeground: '#1A1A1A',
 
-    muted: '#F0F1F3',
+    muted: '#F5F5F5',
     mutedForeground: '#6B7280',
 
-    accent: '#FF9B33',
-    accentForeground: '#2E3136',
+    accent: '#FF4D4D',
+    accentForeground: '#FFFFFF',
 
-    destructive: '#EF4444',
+    destructive: '#D7263D',
     destructiveForeground: '#FFFFFF',
 
-    border: '#E2E4E8',
-    input: '#E2E4E8',
+    border: '#E8E8E8',
+    input: '#E8E8E8',
 
     success: '#22C55E',
     successForeground: '#FFFFFF',
   },
 
   dark: {
-    text: '#E7E8EC',
-    tint: '#FF8A1E',
+    text: '#F5F5F5',
+    tint: '#FF5252',
 
-    background: '#26282B',
-    foreground: '#E7E8EC',
+    background: '#121212',
+    foreground: '#F5F5F5',
 
-    card: '#2E3136',
-    cardForeground: '#E7E8EC',
+    card: '#1C1C1C',
+    cardForeground: '#F5F5F5',
 
-    primary: '#FF8A1E',
+    primary: '#FF3B3B',
     primaryForeground: '#FFFFFF',
 
-    secondary: '#383B41',
-    secondaryForeground: '#E7E8EC',
+    secondary: '#2A2A2A',
+    secondaryForeground: '#F5F5F5',
 
-    muted: '#383B41',
-    mutedForeground: '#9BA0A8',
+    muted: '#2A2A2A',
+    mutedForeground: '#9CA3AF',
 
-    accent: '#FF8A1E',
+    accent: '#FF5252',
     accentForeground: '#FFFFFF',
 
-    destructive: '#EF4444',
+    destructive: '#FF4D4D',
     destructiveForeground: '#FFFFFF',
 
-    border: '#3F434A',
-    input: '#3F434A',
+    border: '#333333',
+    input: '#333333',
 
     success: '#22C55E',
     successForeground: '#FFFFFF',

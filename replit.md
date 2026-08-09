@@ -1,6 +1,6 @@
-# Mig Flares Car Wash
+# U & ME Car Wash
 
-Admin portal for Mig Flares Car Wash — manage transactions, issue receipts, and track daily/weekly/monthly revenue.
+Admin portal for U & ME Car Wash — manage transactions, issue receipts, and track daily/weekly/monthly revenue.
 
 ## Run & Operate
 

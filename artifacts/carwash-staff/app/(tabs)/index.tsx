@@ -42,7 +42,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Good day 👋</Text>
-          <Text style={styles.brandName}>Mig Flares Car Wash</Text>
+          <Text style={styles.brandName}>U &amp; ME Car Wash</Text>
         </View>
         <Pressable
           style={styles.refreshBtn}

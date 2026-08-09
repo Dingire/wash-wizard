@@ -1,4 +1,4 @@
-# Mig Flares Car Wash Admin Portal
+# U & ME Car Wash Admin Portal
 
 A professional admin dashboard for managing car wash operations, tracking revenue, and issuing receipts.
 
