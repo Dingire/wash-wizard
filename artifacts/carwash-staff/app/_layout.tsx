@@ -16,17 +16,24 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { setBaseUrl } from '@workspace/api-client-react';
 
-// Configure API base URL — must be called before any React rendering
+// Configure API base URL — must be called before any React rendering.
+// Precedence:
+//   1. EXPO_PUBLIC_DOMAIN  (e.g. "wash-wizard-production.up.railway.app")
+//   2. API_BASE_URL        (full URL, e.g. "https://...")
+//   3. PRODUCTION_API_BASE_URL (default so bundled builds always hit the
+//      deployed API even when no env var reached the build)
+//   4. dev-only localhost fallback
+const PRODUCTION_API_BASE_URL = 'https://wash-wizard-production.up.railway.app';
 const expoDomain = process.env.EXPO_PUBLIC_DOMAIN;
 const apiBaseUrl = expoDomain
   ? `https://${expoDomain}`
-  : process.env.API_BASE_URL || null;
+  : process.env.API_BASE_URL || PRODUCTION_API_BASE_URL;
 
-if (apiBaseUrl) {
-  setBaseUrl(apiBaseUrl);
-} else if (typeof __DEV__ !== 'undefined' && __DEV__) {
+if (typeof __DEV__ !== 'undefined' && __DEV__ && !process.env.EXPO_PUBLIC_DOMAIN && !process.env.API_BASE_URL) {
   const devUrl = Platform.OS === 'android' ? 'http://10.0.2.2:5000' : 'http://localhost:5000';
   setBaseUrl(devUrl);
+} else {
+  setBaseUrl(apiBaseUrl);
 }
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
