@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -13,6 +14,7 @@ import { useColors } from '@/hooks/useColors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import { useListServices, useCreateTransaction } from '@workspace/api-client-react';
 import { formatCurrency } from '@/lib/utils';
 
@@ -32,11 +34,13 @@ interface SuccessState {
 export default function NewWashScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const { data: services, isLoading: servicesLoading } = useListServices();
   const { mutateAsync: createTransaction, isPending } = useCreateTransaction();
 
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
+  const [servicePickerOpen, setServicePickerOpen] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [vehicleType, setVehicleType] = useState<VehicleType>('Car');
@@ -99,6 +103,18 @@ export default function NewWashScreen() {
     setErrors({});
   };
 
+  const handleDone = () => {
+    handleReset();
+    router.replace('/');
+  };
+
+  const pickService = (id: number) => {
+    Haptics.selectionAsync();
+    setSelectedServiceId(id);
+    setServicePickerOpen(false);
+    setErrors((e) => ({ ...e, service: '' }));
+  };
+
   const styles = makeStyles(colors);
 
   if (success) {
@@ -116,11 +132,18 @@ export default function NewWashScreen() {
             <DetailRow label="Amount" value={formatCurrency(success.amountPaid)} colors={colors} />
           </View>
           <Pressable
-            style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.85 }]}
+            style={({ pressed }) => [styles.primaryBtn, styles.successPrimaryBtn, pressed && { opacity: 0.85 }]}
             onPress={handleReset}
           >
             <Feather name="plus" size={18} color={colors.primaryForeground} />
-            <Text style={styles.primaryBtnText}>New Wash</Text>
+            <Text style={styles.primaryBtnText}>Add New Wash</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.doneBtn, pressed && { opacity: 0.85 }]}
+            onPress={handleDone}
+          >
+            <Feather name="check" size={18} color={colors.primary} />
+            <Text style={styles.doneBtnText}>Done</Text>
           </Pressable>
         </View>
       </View>
@@ -130,7 +153,7 @@ export default function NewWashScreen() {
   return (
     <ScrollView
       style={[styles.root, { paddingTop: topPad }]}
-      contentContainerStyle={{ paddingBottom: bottomPad + 24 }}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomPad + 40 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
@@ -142,46 +165,84 @@ export default function NewWashScreen() {
 
       {/* Service Selection */}
       <SectionLabel label="Service Package" required colors={colors} />
-      {servicesLoading ? (
-        <ActivityIndicator color={colors.primary} style={{ marginVertical: 16 }} />
-      ) : (
-        <View style={styles.serviceGrid}>
-          {activeServices.map((s) => (
-            <Pressable
-              key={s.id}
-              style={({ pressed }) => [
-                styles.serviceCard,
-                selectedServiceId === s.id && styles.serviceCardActive,
-                pressed && { opacity: 0.85 },
-              ]}
-              onPress={() => {
-                Haptics.selectionAsync();
-                setSelectedServiceId(s.id);
-                setErrors((e) => ({ ...e, service: '' }));
-              }}
-            >
-              <Text
-                style={[
-                  styles.serviceName,
-                  selectedServiceId === s.id && styles.serviceNameActive,
-                ]}
-                numberOfLines={1}
-              >
-                {s.name}
+      <Pressable
+        style={({ pressed }) => [styles.serviceField, pressed && { opacity: 0.85 }]}
+        onPress={() => setServicePickerOpen(true)}
+        disabled={servicesLoading}
+      >
+        {servicesLoading ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : selectedService ? (
+          <>
+            <View style={styles.serviceFieldTextWrap}>
+              <Text style={styles.serviceFieldName} numberOfLines={1}>
+                {selectedService.name}
               </Text>
-              <Text
-                style={[
-                  styles.servicePrice,
-                  selectedServiceId === s.id && styles.servicePriceActive,
-                ]}
-              >
-                {formatCurrency(s.price)}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
+              <Text style={styles.serviceFieldPrice}>{formatCurrency(selectedService.price)}</Text>
+            </View>
+            <Feather name="chevron-down" size={18} color={colors.mutedForeground} />
+          </>
+        ) : (
+          <Text style={styles.serviceFieldPlaceholder}>
+            {activeServices.length > 0 ? 'Choose a service package' : 'No services available'}
+          </Text>
+        )}
+      </Pressable>
       {!!errors.service && <Text style={styles.error}>{errors.service}</Text>}
+
+      {/* Service Picker Modal */}
+      <Modal
+        visible={servicePickerOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setServicePickerOpen(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setServicePickerOpen(false)}>
+          <Pressable style={[styles.modalSheet, { paddingBottom: bottomPad }]} onPress={() => {}}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select a Service Package</Text>
+              <Pressable onPress={() => setServicePickerOpen(false)} hitSlop={10}>
+                <Feather name="x" size={22} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
+            <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
+              {activeServices.map((s) => {
+                const isSelected = s.id === selectedServiceId;
+                return (
+                  <Pressable
+                    key={s.id}
+                    style={({ pressed }) => [
+                      styles.modalItem,
+                      isSelected && styles.modalItemSelected,
+                      pressed && { opacity: 0.85 },
+                    ]}
+                    onPress={() => pickService(s.id)}
+                  >
+                    <View style={styles.modalItemTextWrap}>
+                      <Text
+                        style={[styles.modalItemName, isSelected && styles.modalItemNameSelected]}
+                        numberOfLines={1}
+                      >
+                        {s.name}
+                      </Text>
+                      <Text style={styles.modalItemDesc} numberOfLines={2}>
+                        {s.description}
+                      </Text>
+                    </View>
+                    <Text style={[styles.modalItemPrice, isSelected && styles.modalItemPriceSelected]}>
+                      {formatCurrency(s.price)}
+                    </Text>
+                    {isSelected && <Feather name="check" size={16} color={colors.primary} />}
+                  </Pressable>
+                );
+              })}
+              {activeServices.length === 0 && (
+                <Text style={styles.modalEmpty}>No services available yet.</Text>
+              )}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* Customer Name */}
       <SectionLabel label="Customer Name" required colors={colors} />
@@ -354,41 +415,111 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       color: colors.mutedForeground,
       marginTop: 2,
     },
-    serviceGrid: {
+    serviceField: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 10,
-      paddingHorizontal: 20,
-    },
-    serviceCard: {
-      flex: 1,
-      minWidth: '45%',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       backgroundColor: colors.card,
-      borderRadius: 12,
-      padding: 14,
-      borderWidth: 1.5,
+      borderWidth: 1,
       borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 14,
+      marginHorizontal: 20,
+      gap: 10,
     },
-    serviceCardActive: {
-      borderColor: colors.primary,
-      backgroundColor: colors.primary + '18',
+    serviceFieldTextWrap: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
     },
-    serviceName: {
-      fontSize: 13,
+    serviceFieldName: {
+      flex: 1,
+      fontSize: 15,
       fontFamily: 'Inter_600SemiBold',
       color: colors.foreground,
     },
-    serviceNameActive: {
+    serviceFieldPrice: {
+      fontSize: 15,
+      fontFamily: 'Inter_700Bold',
       color: colors.primary,
     },
-    servicePrice: {
+    serviceFieldPlaceholder: {
+      fontSize: 15,
+      fontFamily: 'Inter_400Regular',
+      color: colors.mutedForeground,
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'flex-end',
+    },
+    modalSheet: {
+      backgroundColor: colors.card,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingTop: 16,
+      paddingHorizontal: 20,
+      paddingBottom: 24,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+    },
+    modalTitle: {
+      fontSize: 16,
+      fontFamily: 'Inter_700Bold',
+      color: colors.foreground,
+    },
+    modalItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      padding: 14,
+      marginBottom: 8,
+    },
+    modalItemSelected: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + '12',
+    },
+    modalItemTextWrap: {
+      flex: 1,
+    },
+    modalItemName: {
+      fontSize: 15,
+      fontFamily: 'Inter_600SemiBold',
+      color: colors.foreground,
+    },
+    modalItemNameSelected: {
+      color: colors.primary,
+    },
+    modalItemDesc: {
+      fontSize: 12,
+      fontFamily: 'Inter_400Regular',
+      color: colors.mutedForeground,
+      marginTop: 2,
+    },
+    modalItemPrice: {
       fontSize: 15,
       fontFamily: 'Inter_700Bold',
       color: colors.mutedForeground,
-      marginTop: 4,
     },
-    servicePriceActive: {
+    modalItemPriceSelected: {
       color: colors.primary,
+    },
+    modalEmpty: {
+      fontSize: 13,
+      fontFamily: 'Inter_400Regular',
+      color: colors.mutedForeground,
+      textAlign: 'center',
+      paddingVertical: 24,
     },
     input: {
       backgroundColor: colors.card,
@@ -508,6 +639,27 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
       borderWidth: 1,
       borderColor: colors.border,
       marginBottom: 28,
+    },
+    successPrimaryBtn: {
+      alignSelf: 'stretch',
+    },
+    doneBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 14,
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+      paddingVertical: 16,
+      gap: 8,
+      marginHorizontal: 20,
+      marginTop: 12,
+      alignSelf: 'stretch',
+    },
+    doneBtnText: {
+      fontSize: 16,
+      fontFamily: 'Inter_600SemiBold',
+      color: colors.primary,
     },
     success: {
       color: '#22C55E',
