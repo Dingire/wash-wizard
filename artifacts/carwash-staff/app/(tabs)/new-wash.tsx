@@ -54,6 +54,10 @@ export default function NewWashScreen() {
 
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
   const bottomPad = Platform.OS === 'web' ? 34 : insets.bottom + 16;
+  // The tab bar is absolutely positioned over the scroll content, so the
+  // bottom of the screen must be padded past its height (~49pt native,
+  // ~84px web) or the last button gets covered.
+  const tabBarPad = (Platform.OS === 'web' ? 84 : 49) + bottomPad;
 
   const validate = (): boolean => {
     const e: Record<string, string> = {};
@@ -153,7 +157,7 @@ export default function NewWashScreen() {
   return (
     <ScrollView
       style={[styles.root, { paddingTop: topPad }]}
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomPad + 40 }}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: bottomPad + tabBarPad + 24 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
