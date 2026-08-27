@@ -31,7 +31,7 @@ Configure these Railway environment variables for the API service:
 - `PGSSLMODE=require` (if required by Railway Postgres)
 - `ZEDBITE_SMS_UID=COO0DO85LV`
 - `ZEDBITE_SMS_API_KEY=b53e50d3a7a72fbc403c974ccaf0c1caae507fa544943170712bc49a81718a19`
-- `ZEDBITE_SMS_SENDER_ID=U&MECarDetailers`
+- `ZEDBITE_SMS_SENDER_ID=GENAUTH`
 
 Never put SMS credentials in frontend environment variables or commit them to the repository. They belong only on the API service.
 
