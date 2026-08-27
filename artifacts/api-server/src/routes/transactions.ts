@@ -10,6 +10,7 @@ import {
   GetTransactionResponse,
   DeleteTransactionParams,
 } from "@workspace/api-zod";
+import { normaliseRecipient, sendReceiptSms, type SmsStatus } from "../lib/sms";
 
 const router: IRouter = Router();
 
@@ -68,6 +69,10 @@ router.post("/transactions", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  if (parsed.data.sendSms && (!parsed.data.customerPhone || !normaliseRecipient(parsed.data.customerPhone))) {
+    res.status(400).json({ error: "A valid customer phone number with country code is required to send an SMS" });
+    return;
+  }
 
   // Look up service to get name and price snapshot
   const [service] = await db
@@ -96,7 +101,19 @@ router.post("/transactions", async (req, res): Promise<void> => {
     })
     .returning();
 
-  res.status(201).json(CreateTransactionResponse.parse(formatTx(tx)));
+  let smsStatus: SmsStatus = "not_requested";
+  if (parsed.data.sendSms && parsed.data.customerPhone) {
+    smsStatus = await sendReceiptSms({
+      recipient: parsed.data.customerPhone,
+      customerName: tx.customerName,
+      receiptNumber: tx.receiptNumber,
+      serviceName: tx.serviceName,
+      vehiclePlate: tx.vehiclePlate,
+      amountPaid: tx.amountPaid,
+    });
+  }
+
+  res.status(201).json(CreateTransactionResponse.parse({ ...formatTx(tx), smsStatus }));
 });
 
 router.get("/transactions/:id", async (req, res): Promise<void> => {

@@ -29,6 +29,7 @@ interface SuccessState {
   customerName: string;
   serviceName: string;
   amountPaid: number;
+  smsStatus?: string;
 }
 
 export default function NewWashScreen() {
@@ -42,6 +43,8 @@ export default function NewWashScreen() {
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
   const [servicePickerOpen, setServicePickerOpen] = useState(false);
   const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [sendSms, setSendSms] = useState(false);
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [vehicleType, setVehicleType] = useState<VehicleType>('Car');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
@@ -63,6 +66,9 @@ export default function NewWashScreen() {
     const e: Record<string, string> = {};
     if (!selectedServiceId) e.service = 'Please select a service';
     if (!customerName.trim()) e.customerName = 'Customer name is required';
+    if (sendSms && !/^\+?[0-9\s()-]{7,20}$/.test(customerPhone)) {
+      e.customerPhone = 'Enter a valid phone number with country code';
+    }
     if (!vehiclePlate.trim()) e.vehiclePlate = 'Vehicle plate is required';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -76,6 +82,8 @@ export default function NewWashScreen() {
         data: {
           serviceId: selectedService.id,
           customerName: customerName.trim(),
+          customerPhone: customerPhone.trim() || undefined,
+          sendSms,
           vehiclePlate: vehiclePlate.trim().toUpperCase(),
           vehicleType,
           amountPaid: selectedService.price,
@@ -89,6 +97,7 @@ export default function NewWashScreen() {
         customerName: tx.customerName,
         serviceName: tx.serviceName,
         amountPaid: tx.amountPaid,
+        smsStatus: tx.smsStatus,
       });
     } catch {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -100,6 +109,8 @@ export default function NewWashScreen() {
     setSuccess(null);
     setSelectedServiceId(null);
     setCustomerName('');
+    setCustomerPhone('');
+    setSendSms(false);
     setVehiclePlate('');
     setVehicleType('Car');
     setPaymentMethod('Cash');
@@ -134,6 +145,9 @@ export default function NewWashScreen() {
             <DetailRow label="Customer" value={success.customerName} colors={colors} />
             <DetailRow label="Service" value={success.serviceName} colors={colors} />
             <DetailRow label="Amount" value={formatCurrency(success.amountPaid)} colors={colors} />
+            {success.smsStatus && success.smsStatus !== 'not_requested' && (
+              <DetailRow label="SMS" value={success.smsStatus.replace('_', ' ')} colors={colors} />
+            )}
           </View>
           <Pressable
             style={({ pressed }) => [styles.primaryBtn, styles.successPrimaryBtn, pressed && { opacity: 0.85 }]}
@@ -263,6 +277,37 @@ export default function NewWashScreen() {
         autoCapitalize="words"
       />
       {!!errors.customerName && <Text style={styles.error}>{errors.customerName}</Text>}
+
+      {/* Optional SMS receipt */}
+      <Pressable
+        style={styles.smsToggle}
+        onPress={() => {
+          Haptics.selectionAsync();
+          setSendSms((current) => !current);
+          setErrors((e) => ({ ...e, customerPhone: '' }));
+        }}
+      >
+        <Feather name={sendSms ? 'check-square' : 'square'} size={21} color={sendSms ? colors.primary : colors.mutedForeground} />
+        <View style={styles.smsToggleText}>
+          <Text style={styles.smsToggleTitle}>Send SMS receipt</Text>
+          <Text style={styles.smsToggleSubtitle}>Send the customer their receipt after it is issued</Text>
+        </View>
+      </Pressable>
+
+      <SectionLabel label="Customer Phone" required={sendSms} colors={colors} />
+      <TextInput
+        style={[styles.input, !!errors.customerPhone && styles.inputError, !sendSms && styles.inputDisabled]}
+        value={customerPhone}
+        onChangeText={(t) => {
+          setCustomerPhone(t);
+          setErrors((e) => ({ ...e, customerPhone: '' }));
+        }}
+        placeholder="e.g. +255 688 942 372"
+        placeholderTextColor={colors.mutedForeground}
+        keyboardType="phone-pad"
+        editable={sendSms}
+      />
+      {!!errors.customerPhone && <Text style={styles.error}>{errors.customerPhone}</Text>}
 
       {/* Vehicle Plate */}
       <SectionLabel label="Vehicle Plate" required colors={colors} />
@@ -539,6 +584,35 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     },
     inputError: {
       borderColor: colors.destructive,
+    },
+    inputDisabled: {
+      opacity: 0.55,
+    },
+    smsToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginTop: 20,
+      marginHorizontal: 20,
+      padding: 14,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.card,
+    },
+    smsToggleText: {
+      flex: 1,
+    },
+    smsToggleTitle: {
+      fontSize: 14,
+      fontFamily: 'Inter_600SemiBold',
+      color: colors.foreground,
+    },
+    smsToggleSubtitle: {
+      fontSize: 12,
+      fontFamily: 'Inter_400Regular',
+      color: colors.mutedForeground,
+      marginTop: 2,
     },
     inputMultiline: {
       minHeight: 80,

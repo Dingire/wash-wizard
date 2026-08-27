@@ -16,5 +16,9 @@ export interface TransactionInput {
   /** @minimum 0 */
   amountPaid: number;
   paymentMethod: string;
+  /** Customer phone number in international format (for example, +255688942372) */
+  customerPhone?: string;
+  /** Send the customer an SMS receipt after the transaction is recorded */
+  sendSms?: boolean;
   notes?: string;
 }

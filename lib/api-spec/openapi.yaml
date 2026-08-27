@@ -167,7 +167,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Transaction"
+                allOf:
+                  - $ref: "#/components/schemas/Transaction"
+                  - type: object
+                    properties:
+                      smsStatus:
+                        type: string
+                        enum: [sent, failed, not_configured, not_requested]
 
   /transactions/{id}:
     get:
@@ -388,6 +394,13 @@ components:
           minimum: 0
         paymentMethod:
           type: string
+        customerPhone:
+          type: string
+          description: Customer phone number in international format (for example, +255688942372)
+        sendSms:
+          type: boolean
+          default: false
+          description: Send the customer an SMS receipt after the transaction is recorded
         notes:
           type: string
 

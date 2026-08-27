@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CreateTransaction201,
   DailyReport,
   GetDailyReportParams,
   GetMonthlyReportParams,
@@ -604,9 +605,9 @@ export const getCreateTransactionUrl = () => {
 /**
  * @summary Create a new transaction (issue receipt)
  */
-export const createTransaction = async (transactionInput: TransactionInput, options?: Parameters<typeof customFetch>[1]): Promise<Transaction> => {
+export const createTransaction = async (transactionInput: TransactionInput, options?: Parameters<typeof customFetch>[1]): Promise<CreateTransaction201> => {
 
-  return customFetch<Transaction>(getCreateTransactionUrl(),
+  return customFetch<CreateTransaction201>(getCreateTransactionUrl(),
   {
     ...options,
     method: 'POST',

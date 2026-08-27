@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'wouter';
@@ -32,11 +33,21 @@ import { Link } from 'wouter';
 const formSchema = z.object({
   serviceId: z.string().min(1, 'Service is required'),
   customerName: z.string().min(1, 'Customer name is required'),
+  customerPhone: z.string(),
+  sendSms: z.boolean(),
   vehiclePlate: z.string().min(1, 'Vehicle plate is required'),
   vehicleType: z.string().min(1, 'Vehicle type is required'),
   amountPaid: z.string().min(1, 'Amount is required'),
   paymentMethod: z.string().min(1, 'Payment method is required'),
   notes: z.string().optional(),
+}).superRefine((values, context) => {
+  if (values.sendSms && !/^\+?[0-9\s()-]{7,20}$/.test(values.customerPhone)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['customerPhone'],
+      message: 'Enter a valid phone number with country code',
+    });
+  }
 });
 
 export default function NewTransaction() {
@@ -52,6 +63,8 @@ export default function NewTransaction() {
     defaultValues: {
       serviceId: '',
       customerName: '',
+      customerPhone: '',
+      sendSms: false,
       vehiclePlate: '',
       vehicleType: '',
       amountPaid: '',
@@ -74,6 +87,8 @@ export default function NewTransaction() {
         data: {
           serviceId: Number(values.serviceId),
           customerName: values.customerName,
+          customerPhone: values.customerPhone || undefined,
+          sendSms: values.sendSms,
           vehiclePlate: values.vehiclePlate,
           vehicleType: values.vehicleType,
           amountPaid: Number(values.amountPaid),
@@ -82,7 +97,7 @@ export default function NewTransaction() {
         },
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           toast({
             title: 'Receipt created',
             description: 'Transaction recorded successfully',
@@ -182,6 +197,49 @@ export default function NewTransaction() {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="sendSms"
+                  render={({ field }) => (
+                    <FormItem className="rounded-md border border-card-border p-4">
+                      <div className="flex items-center gap-3">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={(checked) => field.onChange(checked === true)}
+                            data-testid="checkbox-send-sms"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="cursor-pointer">Send SMS receipt</FormLabel>
+                          <p className="text-sm text-muted-foreground">Send the customer their receipt after it is issued.</p>
+                        </div>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="customerPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Customer Phone {form.watch('sendSms') ? '' : '(Optional)'}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          inputMode="tel"
+                          placeholder="+255 688 942 372"
+                          disabled={!form.watch('sendSms')}
+                          {...field}
+                          data-testid="input-customer-phone"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}

@@ -146,7 +146,7 @@ export const ListTransactionsResponse = zod.array(ListTransactionsResponseItem)
 
 export const createTransactionBodyAmountPaidMin = 0;
 
-
+export const createTransactionBodySendSmsDefault = false;
 
 export const CreateTransactionBody = zod.object({
   "serviceId": zod.number(),
@@ -155,6 +155,8 @@ export const CreateTransactionBody = zod.object({
   "vehicleType": zod.string(),
   "amountPaid": zod.number().min(createTransactionBodyAmountPaidMin),
   "paymentMethod": zod.string(),
+  "customerPhone": zod.string().optional().describe('Customer phone number in international format (for example, +255688942372)'),
+  "sendSms": zod.boolean().default(createTransactionBodySendSmsDefault).describe('Send the customer an SMS receipt after the transaction is recorded'),
   "notes": zod.string().optional()
 })
 
@@ -171,7 +173,9 @@ export const CreateTransactionResponse = zod.object({
   "paymentMethod": zod.string(),
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
-})
+}).and(zod.object({
+  "smsStatus": zod.enum(['sent', 'failed', 'not_configured', 'not_requested']).optional()
+}))
 
 
 /**
