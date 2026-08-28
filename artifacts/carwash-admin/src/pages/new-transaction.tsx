@@ -41,7 +41,7 @@ const formSchema = z.object({
   paymentMethod: z.string().min(1, 'Payment method is required'),
   notes: z.string().optional(),
 }).superRefine((values, context) => {
-  if (values.sendSms && !/^\+?[0-9\s()-]{7,20}$/.test(values.customerPhone)) {
+  if (values.sendSms && !/^0\d{9}$/.test(values.customerPhone.replace(/\D/g, ''))) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['customerPhone'],
@@ -87,7 +87,7 @@ export default function NewTransaction() {
         data: {
           serviceId: Number(values.serviceId),
           customerName: values.customerName,
-          customerPhone: values.customerPhone || undefined,
+          customerPhone: values.customerPhone ? `+26${values.customerPhone.replace(/\D/g, '')}` : undefined,
           sendSms: values.sendSms,
           vehiclePlate: values.vehiclePlate,
           vehicleType: values.vehicleType,
@@ -227,14 +227,20 @@ export default function NewTransaction() {
                     <FormItem>
                       <FormLabel>Customer Phone {form.watch('sendSms') ? '' : '(Optional)'}</FormLabel>
                       <FormControl>
-                        <Input
-                          type="tel"
-                          inputMode="tel"
-                          placeholder="+255 688 942 372"
-                          disabled={!form.watch('sendSms')}
-                          {...field}
-                          data-testid="input-customer-phone"
-                        />
+                        <div className="flex items-center">
+                          <span className="rounded-l-md border border-r-0 border-input bg-muted px-3 py-2 text-sm text-muted-foreground">+26</span>
+                          <Input
+                            type="tel"
+                            inputMode="tel"
+                            placeholder="0971234567"
+                            maxLength={10}
+                            disabled={!form.watch('sendSms')}
+                            value={field.value.replace(/\D/g, '')}
+                            onChange={(event) => field.onChange(event.target.value.replace(/\D/g, ''))}
+                            className="rounded-l-none"
+                            data-testid="input-customer-phone"
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

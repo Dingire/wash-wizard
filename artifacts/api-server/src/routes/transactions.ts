@@ -69,8 +69,9 @@ router.post("/transactions", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  if (parsed.data.sendSms && (!parsed.data.customerPhone || !normaliseRecipient(parsed.data.customerPhone))) {
-    res.status(400).json({ error: "A valid customer phone number with country code is required to send an SMS" });
+  const smsRecipient = parsed.data.customerPhone ? normaliseRecipient(parsed.data.customerPhone) : null;
+  if (parsed.data.sendSms && (!smsRecipient || !/^260\d{9}$/.test(smsRecipient))) {
+    res.status(400).json({ error: "A valid Zambian phone number is required (12 digits including country code +260)" });
     return;
   }
 

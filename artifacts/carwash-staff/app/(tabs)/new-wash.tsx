@@ -66,7 +66,7 @@ export default function NewWashScreen() {
     const e: Record<string, string> = {};
     if (!selectedServiceId) e.service = 'Please select a service';
     if (!customerName.trim()) e.customerName = 'Customer name is required';
-    if (sendSms && !/^\+?[0-9\s()-]{7,20}$/.test(customerPhone)) {
+    if (sendSms && !/^0\d{9}$/.test(customerPhone.replace(/\D/g, ''))) {
       e.customerPhone = 'Enter a valid phone number with country code';
     }
     if (!vehiclePlate.trim()) e.vehiclePlate = 'Vehicle plate is required';
@@ -82,7 +82,7 @@ export default function NewWashScreen() {
         data: {
           serviceId: selectedService.id,
           customerName: customerName.trim(),
-          customerPhone: customerPhone.trim() || undefined,
+          customerPhone: customerPhone ? `+26${customerPhone.replace(/\D/g, '')}` : undefined,
           sendSms,
           vehiclePlate: vehiclePlate.trim().toUpperCase(),
           vehicleType,
@@ -302,10 +302,11 @@ export default function NewWashScreen() {
           setCustomerPhone(t);
           setErrors((e) => ({ ...e, customerPhone: '' }));
         }}
-        placeholder="e.g. +255 688 942 372"
+        placeholder="e.g. 0971234567"
         placeholderTextColor={colors.mutedForeground}
         keyboardType="phone-pad"
         editable={sendSms}
+        maxLength={10}
       />
       {!!errors.customerPhone && <Text style={styles.error}>{errors.customerPhone}</Text>}
 
