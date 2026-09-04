@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { useListServices, useCreateTransaction } from '@workspace/api-client-react';
+import { useListServices, useCreateTransaction, useGetLoyalty, getGetLoyaltyQueryKey } from '@workspace/api-client-react';
 import { formatCurrency } from '@/lib/utils';
 
 type VehicleType = 'Car' | 'SUV' | 'Truck' | 'Minibus' | 'Other';
@@ -30,6 +30,10 @@ interface SuccessState {
   serviceName: string;
   amountPaid: number;
   smsStatus?: string;
+  freeWashEarned?: boolean;
+  redeemedFreeWash?: boolean;
+  freeWashesAvailable?: number;
+  freeWashSmsStatus?: string;
 }
 
 export default function NewWashScreen() {
@@ -45,12 +49,20 @@ export default function NewWashScreen() {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [sendSms, setSendSms] = useState(false);
+  const [redeemFreeWash, setRedeemFreeWash] = useState(false);
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [vehicleType, setVehicleType] = useState<VehicleType>('Car');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Cash');
   const [notes, setNotes] = useState('');
   const [success, setSuccess] = useState<SuccessState | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const phoneDigits = customerPhone.replace(/\D/g, '');
+  const hasValidPhone = /^0\d{9}$/.test(phoneDigits);
+  const loyaltyId = hasValidPhone ? `26${phoneDigits}` : '';
+  const { data: loyalty, isFetching: loyaltyFetching } = useGetLoyalty(loyaltyId, {
+    query: { queryKey: getGetLoyaltyQueryKey(loyaltyId), enabled: hasValidPhone },
+  });
 
   const activeServices = services?.filter((s) => s.isActive) ?? [];
   const selectedService = activeServices.find((s) => s.id === selectedServiceId);
@@ -66,8 +78,10 @@ export default function NewWashScreen() {
     const e: Record<string, string> = {};
     if (!selectedServiceId) e.service = 'Please select a service';
     if (!customerName.trim()) e.customerName = 'Customer name is required';
-    if (sendSms && !/^0\d{9}$/.test(customerPhone.replace(/\D/g, ''))) {
-      e.customerPhone = 'Enter a valid phone number with country code';
+    if (!/^0\d{9}$/.test(customerPhone.replace(/\D/g, ''))) {
+      e.customerPhone = 'Enter a valid 10-digit phone number';
+    } else if (redeemFreeWash && (loyalty?.freeWashesAvailable ?? 0) < 1) {
+      e.redeemFreeWash = 'This customer does not have a free wash available';
     }
     if (!vehiclePlate.trim()) e.vehiclePlate = 'Vehicle plate is required';
     setErrors(e);
@@ -82,8 +96,9 @@ export default function NewWashScreen() {
         data: {
           serviceId: selectedService.id,
           customerName: customerName.trim(),
-          customerPhone: customerPhone ? `+26${customerPhone.replace(/\D/g, '')}` : undefined,
+          customerPhone: `+26${phoneDigits}`,
           sendSms,
+          redeemFreeWash,
           vehiclePlate: vehiclePlate.trim().toUpperCase(),
           vehicleType,
           amountPaid: selectedService.price,
@@ -98,6 +113,10 @@ export default function NewWashScreen() {
         serviceName: tx.serviceName,
         amountPaid: tx.amountPaid,
         smsStatus: tx.smsStatus,
+        freeWashEarned: tx.loyalty?.freeWashEarned,
+        redeemedFreeWash: tx.loyalty?.redeemedFreeWash,
+        freeWashesAvailable: tx.loyalty?.freeWashesAvailable,
+        freeWashSmsStatus: tx.loyalty?.freeWashSmsStatus,
       });
     } catch {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -111,6 +130,7 @@ export default function NewWashScreen() {
     setCustomerName('');
     setCustomerPhone('');
     setSendSms(false);
+    setRedeemFreeWash(false);
     setVehiclePlate('');
     setVehicleType('Car');
     setPaymentMethod('Cash');
@@ -139,12 +159,36 @@ export default function NewWashScreen() {
           <View style={styles.successIcon}>
             <Feather name="check-circle" size={48} color={colors.success ?? '#22C55E'} />
           </View>
-          <Text style={styles.successTitle}>Receipt Issued!</Text>
+          <Text style={styles.successTitle}>
+            {success.redeemedFreeWash ? 'Free Wash Redeemed!' : 'Receipt Issued!'}
+          </Text>
           <Text style={styles.receiptNumber}>{success.receiptNumber}</Text>
+          {success.freeWashEarned && (
+            <View style={styles.winBanner}>
+              <Feather name="award" size={26} color={colors.success ?? '#22C55E'} />
+              <View style={styles.winBannerTextWrap}>
+                <Text style={styles.winBannerTitle}>You won a free wash!</Text>
+                <Text style={styles.winBannerSubtitle}>
+                  {success.customerName} completed 4 paid washes.
+                  {success.freeWashesAvailable != null && success.freeWashesAvailable > 0
+                    ? ` ${success.freeWashesAvailable} free wash(es) available.`
+                    : ''}
+                </Text>
+                {success.freeWashSmsStatus && success.freeWashSmsStatus !== 'not_requested' && (
+                  <Text style={styles.winBannerSms}>
+                    Win SMS: {success.freeWashSmsStatus.replace('_', ' ')}
+                  </Text>
+                )}
+              </View>
+            </View>
+          )}
           <View style={styles.successDetails}>
             <DetailRow label="Customer" value={success.customerName} colors={colors} />
             <DetailRow label="Service" value={success.serviceName} colors={colors} />
             <DetailRow label="Amount" value={formatCurrency(success.amountPaid)} colors={colors} />
+            {success.redeemedFreeWash && (
+              <DetailRow label="Loyalty" value="Free wash applied" colors={colors} />
+            )}
             {success.smsStatus && success.smsStatus !== 'not_requested' && (
               <DetailRow label="SMS" value={success.smsStatus.replace('_', ' ')} colors={colors} />
             )}
@@ -294,21 +338,76 @@ export default function NewWashScreen() {
         </View>
       </Pressable>
 
-      <SectionLabel label="Customer Phone" required={sendSms} colors={colors} />
+      <SectionLabel label="Customer Phone" required colors={colors} />
       <TextInput
-        style={[styles.input, !!errors.customerPhone && styles.inputError, !sendSms && styles.inputDisabled]}
+        style={[styles.input, !!errors.customerPhone && styles.inputError]}
         value={customerPhone}
         onChangeText={(t) => {
           setCustomerPhone(t);
-          setErrors((e) => ({ ...e, customerPhone: '' }));
+          setErrors((e) => ({ ...e, customerPhone: '', redeemFreeWash: '' }));
         }}
         placeholder="e.g. 0971234567"
         placeholderTextColor={colors.mutedForeground}
         keyboardType="phone-pad"
-        editable={sendSms}
         maxLength={10}
       />
       {!!errors.customerPhone && <Text style={styles.error}>{errors.customerPhone}</Text>}
+      <Text style={styles.fieldHint}>Phone is used to track the free-wash loyalty reward.</Text>
+
+      {hasValidPhone && (
+        <View style={styles.loyaltySection}>
+          <SectionLabel label="Loyalty Reward" colors={colors} />
+          {loyaltyFetching ? (
+            <Text style={styles.loyaltyText}>Checking loyalty record...</Text>
+          ) : loyalty ? (
+            <>
+              <View style={styles.loyaltyCard}>
+                <Feather
+                  name="award"
+                  size={16}
+                  color={loyalty.freeWashesAvailable > 0 ? colors.success ?? '#22C55E' : colors.primary}
+                />
+                <Text style={styles.loyaltyText}>
+                  {loyalty.freeWashesAvailable > 0
+                    ? `${loyalty.freeWashesAvailable} free wash(es) available!`
+                    : `${loyalty.washCount} of 4 paid washes toward a free wash`}
+                </Text>
+              </View>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.smsToggle,
+                  loyalty.freeWashesAvailable < 1 && styles.inputDisabled,
+                  redeemFreeWash && styles.redeemToggleActive,
+                  pressed && loyalty.freeWashesAvailable >= 1 && { opacity: 0.85 },
+                ]}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setRedeemFreeWash((current) => !current);
+                  setErrors((e) => ({ ...e, redeemFreeWash: '' }));
+                }}
+                disabled={loyalty.freeWashesAvailable < 1}
+              >
+                <Feather
+                  name={redeemFreeWash ? 'check-square' : 'square'}
+                  size={21}
+                  color={redeemFreeWash ? colors.primary : colors.mutedForeground}
+                />
+                <View style={styles.smsToggleText}>
+                  <Text style={styles.smsToggleTitle}>Redeem free wash</Text>
+                  <Text style={styles.smsToggleSubtitle}>Apply a free wash to this wash (charged at K0.00)</Text>
+                </View>
+              </Pressable>
+              {!!errors.redeemFreeWash && (
+                <Text style={styles.error}>{errors.redeemFreeWash}</Text>
+              )}
+            </>
+          ) : (
+            <Text style={styles.loyaltyText}>
+              New customer - save this wash to start tracking toward a free wash.
+            </Text>
+          )}
+        </View>
+      )}
 
       {/* Vehicle Plate */}
       <SectionLabel label="Vehicle Plate" required colors={colors} />
@@ -589,6 +688,38 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     inputDisabled: {
       opacity: 0.55,
     },
+    fieldHint: {
+      fontSize: 12,
+      color: colors.mutedForeground,
+      fontFamily: 'Inter_400Regular',
+      marginTop: 5,
+      marginHorizontal: 20,
+    },
+    loyaltySection: {
+      marginTop: 4,
+      marginBottom: 4,
+    },
+    loyaltyCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginHorizontal: 20,
+      backgroundColor: colors.muted,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    loyaltyText: {
+      fontSize: 13,
+      color: colors.foreground,
+      fontFamily: 'Inter_500Medium',
+      flexShrink: 1,
+      marginHorizontal: 20,
+    },
+    redeemToggleActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + '12',
+    },
     smsToggle: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -721,6 +852,39 @@ function makeStyles(colors: ReturnType<typeof useColors>) {
     },
     successPrimaryBtn: {
       alignSelf: 'stretch',
+    },
+    winBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: '#22C55E18',
+      borderWidth: 1,
+      borderColor: '#22C55E',
+      borderRadius: 14,
+      padding: 14,
+      marginBottom: 16,
+      alignSelf: 'stretch',
+    },
+    winBannerTextWrap: {
+      flex: 1,
+    },
+    winBannerTitle: {
+      fontSize: 16,
+      fontFamily: 'Inter_700Bold',
+      color: colors.foreground,
+    },
+    winBannerSubtitle: {
+      fontSize: 12,
+      fontFamily: 'Inter_400Regular',
+      color: colors.mutedForeground,
+      marginTop: 2,
+    },
+    winBannerSms: {
+      fontSize: 12,
+      fontFamily: 'Inter_600SemiBold',
+      color: '#22C55E',
+      marginTop: 4,
+      textTransform: 'capitalize',
     },
     doneBtn: {
       flexDirection: 'row',

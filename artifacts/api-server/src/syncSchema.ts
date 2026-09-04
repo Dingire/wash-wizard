@@ -20,12 +20,25 @@ const statements = [
     service_name TEXT NOT NULL,
     service_price NUMERIC(10, 2) NOT NULL,
     customer_name TEXT NOT NULL,
+    customer_phone TEXT,
     vehicle_plate TEXT NOT NULL,
     vehicle_type TEXT NOT NULL DEFAULT 'Car',
     amount_paid NUMERIC(10, 2) NOT NULL,
     payment_method TEXT NOT NULL DEFAULT 'Cash',
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`,
+  `ALTER TABLE transactions ADD COLUMN IF NOT EXISTS customer_phone TEXT`,
+  `CREATE TABLE IF NOT EXISTS loyalty (
+    id SERIAL PRIMARY KEY,
+    phone TEXT NOT NULL UNIQUE,
+    customer_name TEXT NOT NULL,
+    wash_count INTEGER NOT NULL DEFAULT 0,
+    free_washes_available INTEGER NOT NULL DEFAULT 0,
+    free_washes_earned INTEGER NOT NULL DEFAULT 0,
+    free_washes_redeemed INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`,
 ];
 

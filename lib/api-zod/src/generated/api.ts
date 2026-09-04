@@ -129,6 +129,7 @@ export const ListTransactionsResponseItem = zod.object({
   "serviceName": zod.string(),
   "servicePrice": zod.number(),
   "customerName": zod.string(),
+  "customerPhone": zod.string().nullable(),
   "vehiclePlate": zod.string(),
   "vehicleType": zod.string(),
   "amountPaid": zod.number(),
@@ -147,6 +148,7 @@ export const ListTransactionsResponse = zod.array(ListTransactionsResponseItem)
 export const createTransactionBodyAmountPaidMin = 0;
 
 export const createTransactionBodySendSmsDefault = false;
+export const createTransactionBodyRedeemFreeWashDefault = false;
 
 export const CreateTransactionBody = zod.object({
   "serviceId": zod.number(),
@@ -155,8 +157,9 @@ export const CreateTransactionBody = zod.object({
   "vehicleType": zod.string(),
   "amountPaid": zod.number().min(createTransactionBodyAmountPaidMin),
   "paymentMethod": zod.string(),
-  "customerPhone": zod.string().optional().describe('Customer phone number in international format (for example, +255688942372)'),
+  "customerPhone": zod.string().optional().describe('Customer phone number in international format (for example, +260971234567). Used to track free-wash loyalty rewards.'),
   "sendSms": zod.boolean().default(createTransactionBodySendSmsDefault).describe('Send the customer an SMS receipt after the transaction is recorded'),
+  "redeemFreeWash": zod.boolean().default(createTransactionBodyRedeemFreeWashDefault).describe('Redeem a previously earned free wash for this transaction (amount is charged as 0)'),
   "notes": zod.string().optional()
 })
 
@@ -167,6 +170,7 @@ export const CreateTransactionResponse = zod.object({
   "serviceName": zod.string(),
   "servicePrice": zod.number(),
   "customerName": zod.string(),
+  "customerPhone": zod.string().nullable(),
   "vehiclePlate": zod.string(),
   "vehicleType": zod.string(),
   "amountPaid": zod.number(),
@@ -174,7 +178,14 @@ export const CreateTransactionResponse = zod.object({
   "notes": zod.string().nullish(),
   "createdAt": zod.string()
 }).and(zod.object({
-  "smsStatus": zod.enum(['sent', 'failed', 'not_configured', 'not_requested']).optional()
+  "smsStatus": zod.enum(['sent', 'failed', 'not_configured', 'not_requested']).optional(),
+  "loyalty": zod.object({
+  "washCount": zod.number().describe('Paid washes completed toward the next free wash'),
+  "freeWashesAvailable": zod.number(),
+  "freeWashEarned": zod.boolean().describe('Whether this transaction earned the customer a free wash'),
+  "freeWashSmsStatus": zod.enum(['sent', 'failed', 'not_configured', 'not_requested']),
+  "redeemedFreeWash": zod.boolean().describe('Whether this transaction was a redeemed free wash')
+}).optional()
 }))
 
 
@@ -192,6 +203,7 @@ export const GetTransactionResponse = zod.object({
   "serviceName": zod.string(),
   "servicePrice": zod.number(),
   "customerName": zod.string(),
+  "customerPhone": zod.string().nullable(),
   "vehiclePlate": zod.string(),
   "vehicleType": zod.string(),
   "amountPaid": zod.number(),
@@ -212,6 +224,43 @@ export const DeleteTransactionResponse = zod.void()
 
 
 /**
+ * Leaderboard of customers tracked for the free-wash reward
+ * @summary List loyalty reward customers
+ */
+export const ListLoyaltyResponseItem = zod.object({
+  "id": zod.number(),
+  "phone": zod.string(),
+  "customerName": zod.string(),
+  "washCount": zod.number().describe('Paid washes completed toward the next free wash'),
+  "freeWashesAvailable": zod.number(),
+  "freeWashesEarned": zod.number(),
+  "freeWashesRedeemed": zod.number(),
+  "updatedAt": zod.string()
+})
+export const ListLoyaltyResponse = zod.array(ListLoyaltyResponseItem)
+
+
+/**
+ * Returns a customer's wash count and free-wash balance
+ * @summary Get a customer's loyalty progress by phone number
+ */
+export const GetLoyaltyParams = zod.object({
+  "customerId": zod.coerce.string()
+})
+
+export const GetLoyaltyResponse = zod.object({
+  "id": zod.number(),
+  "phone": zod.string(),
+  "customerName": zod.string(),
+  "washCount": zod.number().describe('Paid washes completed toward the next free wash'),
+  "freeWashesAvailable": zod.number(),
+  "freeWashesEarned": zod.number(),
+  "freeWashesRedeemed": zod.number(),
+  "updatedAt": zod.string()
+})
+
+
+/**
  * @summary Get dashboard summary (today's stats + totals)
  */
 export const GetReportSummaryResponse = zod.object({
@@ -228,6 +277,7 @@ export const GetReportSummaryResponse = zod.object({
   "serviceName": zod.string(),
   "servicePrice": zod.number(),
   "customerName": zod.string(),
+  "customerPhone": zod.string().nullable(),
   "vehiclePlate": zod.string(),
   "vehicleType": zod.string(),
   "amountPaid": zod.number(),
@@ -268,6 +318,7 @@ export const GetDailyReportResponse = zod.object({
   "serviceName": zod.string(),
   "servicePrice": zod.number(),
   "customerName": zod.string(),
+  "customerPhone": zod.string().nullable(),
   "vehiclePlate": zod.string(),
   "vehicleType": zod.string(),
   "amountPaid": zod.number(),

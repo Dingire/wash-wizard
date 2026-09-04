@@ -6,8 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CreateTransaction201SmsStatus } from './createTransaction201SmsStatus';
+import type { LoyaltyReward } from './loyaltyReward';
 import type { Transaction } from './transaction';
 
 export type CreateTransaction201 = Transaction & {
   smsStatus?: CreateTransaction201SmsStatus;
+  loyalty?: LoyaltyReward;
 };

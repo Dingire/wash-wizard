@@ -16,9 +16,11 @@ export interface TransactionInput {
   /** @minimum 0 */
   amountPaid: number;
   paymentMethod: string;
-  /** Customer phone number in international format (for example, +255688942372) */
+  /** Customer phone number in international format (for example, +260971234567). Used to track free-wash loyalty rewards. */
   customerPhone?: string;
   /** Send the customer an SMS receipt after the transaction is recorded */
   sendSms?: boolean;
+  /** Redeem a previously earned free wash for this transaction (amount is charged as 0) */
+  redeemFreeWash?: boolean;
   notes?: string;
 }

@@ -4,7 +4,8 @@ import {
   Receipt, 
   BarChart3, 
   Droplets,
-  PlusCircle
+  PlusCircle,
+  Trophy
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +15,7 @@ const navigation = [
   { name: 'New Receipt', href: '/transactions/new', icon: PlusCircle },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Services', href: '/services', icon: Droplets },
+  { name: 'Loyalty', href: '/loyalty', icon: Trophy },
 ];
 
 export function AppSidebar() {

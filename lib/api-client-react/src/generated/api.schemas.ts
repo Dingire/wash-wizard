@@ -43,6 +43,8 @@ export interface Transaction {
   serviceName: string;
   servicePrice: number;
   customerName: string;
+  /** @nullable */
+  customerPhone: string | null;
   vehiclePlate: string;
   vehicleType: string;
   amountPaid: number;
@@ -62,10 +64,12 @@ export interface TransactionInput {
   /** @minimum 0 */
   amountPaid: number;
   paymentMethod: string;
-  /** Customer phone number in international format (for example, +255688942372) */
+  /** Customer phone number in international format (for example, +260971234567). Used to track free-wash loyalty rewards. */
   customerPhone?: string;
   /** Send the customer an SMS receipt after the transaction is recorded */
   sendSms?: boolean;
+  /** Redeem a previously earned free wash for this transaction (amount is charged as 0) */
+  redeemFreeWash?: boolean;
   notes?: string;
 }
 
@@ -119,6 +123,39 @@ export interface MonthlyReport {
   byService: RevenueByService[];
 }
 
+export interface Loyalty {
+  id: number;
+  phone: string;
+  customerName: string;
+  /** Paid washes completed toward the next free wash */
+  washCount: number;
+  freeWashesAvailable: number;
+  freeWashesEarned: number;
+  freeWashesRedeemed: number;
+  updatedAt: string;
+}
+
+export type LoyaltyRewardFreeWashSmsStatus = typeof LoyaltyRewardFreeWashSmsStatus[keyof typeof LoyaltyRewardFreeWashSmsStatus];
+
+
+export const LoyaltyRewardFreeWashSmsStatus = {
+  sent: 'sent',
+  failed: 'failed',
+  not_configured: 'not_configured',
+  not_requested: 'not_requested',
+} as const;
+
+export interface LoyaltyReward {
+  /** Paid washes completed toward the next free wash */
+  washCount: number;
+  freeWashesAvailable: number;
+  /** Whether this transaction earned the customer a free wash */
+  freeWashEarned: boolean;
+  freeWashSmsStatus: LoyaltyRewardFreeWashSmsStatus;
+  /** Whether this transaction was a redeemed free wash */
+  redeemedFreeWash: boolean;
+}
+
 export type ListTransactionsParams = {
 /**
  * Filter by date (YYYY-MM-DD)
@@ -139,6 +176,7 @@ export const CreateTransaction201SmsStatus = {
 
 export type CreateTransaction201 = Transaction & {
   smsStatus?: CreateTransaction201SmsStatus;
+  loyalty?: LoyaltyReward;
 };
 
 export type GetDailyReportParams = {

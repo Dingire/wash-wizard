@@ -10,6 +10,7 @@ export const transactionsTable = pgTable("transactions", {
   serviceName: text("service_name").notNull(),
   servicePrice: numeric("service_price", { precision: 10, scale: 2 }).notNull(),
   customerName: text("customer_name").notNull(),
+  customerPhone: text("customer_phone"),
   vehiclePlate: text("vehicle_plate").notNull(),
   vehicleType: text("vehicle_type").notNull().default("Car"),
   amountPaid: numeric("amount_paid", { precision: 10, scale: 2 }).notNull(),

@@ -18,7 +18,9 @@ if (!connectionString) {
 // Railway Postgres requires TLS. Enable SSL when the connection string or
 // environment asks for it (sslmode=require / PGSSLMODE=require).
 const requireSsl =
-  /(^|[?&])sslmode=require/i.test(connectionString) ||
+  (connectionString
+    ? /(^|[?&])sslmode=require/i.test(connectionString)
+    : false) ||
   process.env.PGSSLMODE === "require" ||
   process.env.PGSSLMODE === "verify-full" ||
   process.env.PGSSLMODE === "verify-ca" ||

@@ -10,6 +10,12 @@ type ReceiptSms = {
   vehiclePlate: string;
   amountPaid: string;
 };
+
+type LoyaltyWinSms = {
+  recipient: string;
+  customerName: string;
+  washesCompleted: number;
+};
 export type SmsStatus = "sent" | "failed" | "not_configured" | "not_requested";
 
 export function normaliseRecipient(phone: string): string | null {
@@ -17,16 +23,15 @@ export function normaliseRecipient(phone: string): string | null {
   return /^\d{7,15}$/.test(recipient) ? recipient : null;
 }
 
-export async function sendReceiptSms(receipt: ReceiptSms): Promise<SmsStatus> {
+async function sendSmsMessage(message: string, recipient: string, logContext: Record<string, unknown>): Promise<SmsStatus> {
   const uid = process.env.ZEDBITE_SMS_UID;
   const apiKey = process.env.ZEDBITE_SMS_API_KEY;
   const senderId = process.env.ZEDBITE_SMS_SENDER_ID;
-  const recipient = normaliseRecipient(receipt.recipient);
 
   if (!uid || !apiKey || !senderId) {
     logger.warn(
       {
-        receiptNumber: receipt.receiptNumber,
+        ...logContext,
         hasUid: Boolean(uid),
         hasApiKey: Boolean(apiKey),
         hasSenderId: Boolean(senderId),
@@ -35,18 +40,6 @@ export async function sendReceiptSms(receipt: ReceiptSms): Promise<SmsStatus> {
     );
     return "not_configured";
   }
-  if (!recipient) {
-    logger.warn({ receiptNumber: receipt.receiptNumber }, "SMS was requested with an invalid recipient number");
-    return "failed";
-  }
-
-  const message = [
-    `Thank you, ${receipt.customerName}!`,
-    `Receipt: ${receipt.receiptNumber}`,
-    `Service: ${receipt.serviceName}`,
-    `Vehicle: ${receipt.vehiclePlate}`,
-    `Amount paid: K${Number(receipt.amountPaid).toFixed(2)}`,
-  ].join("\n");
 
   try {
     const response = await fetch(SMS_ENDPOINT, {
@@ -60,24 +53,61 @@ export async function sendReceiptSms(receipt: ReceiptSms): Promise<SmsStatus> {
     if (!response.ok) {
       logger.warn(
         {
-          receiptNumber: receipt.receiptNumber,
+          ...logContext,
           status: response.status,
           providerResponse: providerBody.slice(0, 500),
         },
-        "SMS provider rejected receipt message",
+        "SMS provider rejected message",
       );
       return "failed";
     }
     logger.info(
       {
-        receiptNumber: receipt.receiptNumber,
+        ...logContext,
         providerResponse: providerBody.slice(0, 500),
       },
-      "SMS receipt sent",
+      "SMS sent",
     );
     return "sent";
   } catch (error) {
-    logger.warn({ err: error, receiptNumber: receipt.receiptNumber }, "Unable to send SMS receipt");
+    logger.warn({ err: error, ...logContext }, "Unable to send SMS");
     return "failed";
   }
+}
+
+export async function sendReceiptSms(receipt: ReceiptSms): Promise<SmsStatus> {
+  const recipient = normaliseRecipient(receipt.recipient);
+
+  if (!recipient) {
+    logger.warn({ receiptNumber: receipt.receiptNumber }, "SMS was requested with an invalid recipient number");
+    return "failed";
+  }
+
+  const message = [
+    `Thank you, ${receipt.customerName}!`,
+    `Receipt: ${receipt.receiptNumber}`,
+    `Service: ${receipt.serviceName}`,
+    `Vehicle: ${receipt.vehiclePlate}`,
+    `Amount paid: K${Number(receipt.amountPaid).toFixed(2)}`,
+  ].join("\n");
+
+  return sendSmsMessage(message, recipient, { receiptNumber: receipt.receiptNumber, type: "receipt" });
+}
+
+export async function sendLoyaltyWinSms(win: LoyaltyWinSms): Promise<SmsStatus> {
+  const recipient = normaliseRecipient(win.recipient);
+
+  if (!recipient) {
+    logger.warn({ customerName: win.customerName }, "Loyalty win SMS requested with an invalid recipient number");
+    return "failed";
+  }
+
+  const message = [
+    `Congratulations, ${win.customerName}!`,
+    `You have completed ${win.washesCompleted} car washes at U & ME Car Wash.`,
+    "You have won a FREE car wash!",
+    "Present this SMS at our car wash to claim your free wash.",
+  ].join("\n");
+
+  return sendSmsMessage(message, recipient, { customerName: win.customerName, type: "loyalty-win" });
 }

@@ -27,6 +27,7 @@ import type {
   GetWeeklyReportParams,
   HealthStatus,
   ListTransactionsParams,
+  Loyalty,
   MonthlyReport,
   ReportSummary,
   Service,
@@ -812,6 +813,162 @@ export const useDeleteTransaction = <TError = ErrorType<void>,
       > => {
       return useMutation(getDeleteTransactionMutationOptions(options));
     }
+
+export const getListLoyaltyUrl = () => {
+
+
+
+
+  return `/api/loyalty`
+}
+
+/**
+ * Leaderboard of customers tracked for the free-wash reward
+ * @summary List loyalty reward customers
+ */
+export const listLoyalty = async ( options?: Parameters<typeof customFetch>[1]): Promise<Loyalty[]> => {
+
+  return customFetch<Loyalty[]>(getListLoyaltyUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListLoyaltyQueryKey = () => {
+    return [
+    `/api/loyalty`
+    ] as const;
+    }
+
+
+export const getListLoyaltyQueryOptions = <TData = Awaited<ReturnType<typeof listLoyalty>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listLoyalty>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListLoyaltyQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listLoyalty>>> = ({ signal }) => listLoyalty({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listLoyalty>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListLoyaltyQueryResult = NonNullable<Awaited<ReturnType<typeof listLoyalty>>>
+export type ListLoyaltyQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List loyalty reward customers
+ */
+
+export function useListLoyalty<TData = Awaited<ReturnType<typeof listLoyalty>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listLoyalty>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListLoyaltyQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetLoyaltyUrl = (customerId: string,) => {
+
+
+
+
+  return `/api/loyalty/${customerId}`
+}
+
+/**
+ * Returns a customer's wash count and free-wash balance
+ * @summary Get a customer's loyalty progress by phone number
+ */
+export const getLoyalty = async (customerId: string, options?: Parameters<typeof customFetch>[1]): Promise<Loyalty> => {
+
+  return customFetch<Loyalty>(getGetLoyaltyUrl(customerId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLoyaltyQueryKey = (customerId: string,) => {
+    return [
+    `/api/loyalty/${customerId}`
+    ] as const;
+    }
+
+
+export const getGetLoyaltyQueryOptions = <TData = Awaited<ReturnType<typeof getLoyalty>>, TError = ErrorType<void>>(customerId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLoyalty>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLoyaltyQueryKey(customerId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLoyalty>>> = ({ signal }) => getLoyalty(customerId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: customerId !== null && customerId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLoyalty>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLoyaltyQueryResult = NonNullable<Awaited<ReturnType<typeof getLoyalty>>>
+export type GetLoyaltyQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a customer's loyalty progress by phone number
+ */
+
+export function useGetLoyalty<TData = Awaited<ReturnType<typeof getLoyalty>>, TError = ErrorType<void>>(
+ customerId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLoyalty>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLoyaltyQueryOptions(customerId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetReportSummaryUrl = () => {
 

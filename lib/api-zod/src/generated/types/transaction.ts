@@ -13,6 +13,8 @@ export interface Transaction {
   serviceName: string;
   servicePrice: number;
   customerName: string;
+  /** @nullable */
+  customerPhone: string | null;
   vehiclePlate: string;
   vehicleType: string;
   amountPaid: number;

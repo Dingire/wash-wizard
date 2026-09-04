@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useCreateTransaction, useListServices } from '@workspace/api-client-react';
+import { useCreateTransaction, useListServices, getListLoyaltyQueryKey } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { getListTransactionsQueryKey, getGetReportSummaryQueryKey } from '@workspace/api-client-react';
 import { useLocation } from 'wouter';
@@ -35,17 +35,34 @@ const formSchema = z.object({
   customerName: z.string().min(1, 'Customer name is required'),
   customerPhone: z.string(),
   sendSms: z.boolean(),
+  redeemFreeWash: z.boolean(),
   vehiclePlate: z.string().min(1, 'Vehicle plate is required'),
   vehicleType: z.string().min(1, 'Vehicle type is required'),
   amountPaid: z.string().min(1, 'Amount is required'),
   paymentMethod: z.string().min(1, 'Payment method is required'),
   notes: z.string().optional(),
 }).superRefine((values, context) => {
-  if (values.sendSms && !/^0\d{9}$/.test(values.customerPhone.replace(/\D/g, ''))) {
+  const phoneDigits = values.customerPhone.replace(/\D/g, '');
+  const hasValidPhone = /^0\d{9}$/.test(phoneDigits);
+  if (!hasValidPhone) {
     context.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['customerPhone'],
-      message: 'Enter a valid phone number with country code',
+      message: 'Enter a valid 10-digit phone number (e.g. 0971234567)',
+    });
+  }
+  if (values.sendSms && !hasValidPhone) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['customerPhone'],
+      message: 'A valid phone number is required to send an SMS receipt',
+    });
+  }
+  if (values.redeemFreeWash && !hasValidPhone) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['customerPhone'],
+      message: 'A valid phone number is required to redeem a free wash',
     });
   }
 });
@@ -65,6 +82,7 @@ export default function NewTransaction() {
       customerName: '',
       customerPhone: '',
       sendSms: false,
+      redeemFreeWash: false,
       vehiclePlate: '',
       vehicleType: '',
       amountPaid: '',
@@ -75,6 +93,7 @@ export default function NewTransaction() {
 
   const selectedServiceId = form.watch('serviceId');
   const selectedService = services?.find((s) => s.id === Number(selectedServiceId));
+  const redeemFreeWash = form.watch('redeemFreeWash');
 
   // Auto-fill amount when service is selected
   if (selectedService && !form.getValues('amountPaid')) {
@@ -87,8 +106,9 @@ export default function NewTransaction() {
         data: {
           serviceId: Number(values.serviceId),
           customerName: values.customerName,
-          customerPhone: values.customerPhone ? `+26${values.customerPhone.replace(/\D/g, '')}` : undefined,
+          customerPhone: `+26${values.customerPhone.replace(/\D/g, '')}`,
           sendSms: values.sendSms,
+          redeemFreeWash: values.redeemFreeWash,
           vehiclePlate: values.vehiclePlate,
           vehicleType: values.vehicleType,
           amountPaid: Number(values.amountPaid),
@@ -98,12 +118,26 @@ export default function NewTransaction() {
       },
       {
         onSuccess: (data) => {
-          toast({
-            title: 'Receipt created',
-            description: 'Transaction recorded successfully',
-          });
+          const loyalty = data.loyalty;
+          if (loyalty?.freeWashEarned) {
+            toast({
+              title: 'Free wash won!',
+              description: `${data.customerName} completed 4 paid washes and won a free car wash. SMS: ${loyalty.freeWashSmsStatus.replace('_', ' ')}`,
+            });
+          } else if (loyalty?.redeemedFreeWash) {
+            toast({
+              title: 'Free wash redeemed',
+              description: 'This wash was recorded as a free loyalty reward (K0.00).',
+            });
+          } else {
+            toast({
+              title: 'Receipt created',
+              description: 'Transaction recorded successfully',
+            });
+          }
           queryClient.invalidateQueries({ queryKey: getListTransactionsQueryKey() });
           queryClient.invalidateQueries({ queryKey: getGetReportSummaryQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getListLoyaltyQueryKey() });
           setLocation('/transactions');
         },
         onError: (error: Error) => {
@@ -225,7 +259,7 @@ export default function NewTransaction() {
                   name="customerPhone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Customer Phone {form.watch('sendSms') ? '' : '(Optional)'}</FormLabel>
+                      <FormLabel>Customer Phone</FormLabel>
                       <FormControl>
                         <div className="flex items-center">
                           <span className="rounded-l-md border border-r-0 border-input bg-muted px-3 py-2 text-sm text-muted-foreground">+26</span>
@@ -234,7 +268,6 @@ export default function NewTransaction() {
                             inputMode="tel"
                             placeholder="0971234567"
                             maxLength={10}
-                            disabled={!form.watch('sendSms')}
                             value={field.value.replace(/\D/g, '')}
                             onChange={(event) => field.onChange(event.target.value.replace(/\D/g, ''))}
                             className="rounded-l-none"
@@ -242,7 +275,39 @@ export default function NewTransaction() {
                           />
                         </div>
                       </FormControl>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Required to track the free-wash loyalty reward and to send SMS alerts.
+                      </p>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="redeemFreeWash"
+                  render={({ field }) => (
+                    <FormItem className="rounded-md border border-card-border p-4">
+                      <div className="flex items-center gap-3">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked === true);
+                              if (checked === true) {
+                                form.setValue('amountPaid', '0');
+                              }
+                            }}
+                            data-testid="checkbox-redeem-free-wash"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="cursor-pointer">Redeem a free wash</FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Apply one of the customer's earned free washes to this wash (charged at K0.00 with a loyalty note).
+                          </p>
+                        </div>
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -273,25 +338,29 @@ export default function NewTransaction() {
                 />
 
                 <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="amountPaid"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Amount Paid</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            data-testid="input-amount"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+<FormField
+                  control={form.control}
+                  name="amountPaid"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Amount Paid</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          disabled={redeemFreeWash}
+                          {...field}
+                          data-testid="input-amount"
+                        />
+                      </FormControl>
+                      {redeemFreeWash && (
+                        <p className="text-sm text-muted-foreground">Free wash redemption - charged at K0.00.</p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                   <FormField
                     control={form.control}

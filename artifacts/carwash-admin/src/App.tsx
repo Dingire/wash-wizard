@@ -8,6 +8,7 @@ import Transactions from '@/pages/transactions';
 import NewTransaction from '@/pages/new-transaction';
 import Reports from '@/pages/reports';
 import Services from '@/pages/services';
+import Loyalty from '@/pages/loyalty';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/transactions/new" component={NewTransaction} />
       <Route path="/reports" component={Reports} />
       <Route path="/services" component={Services} />
+      <Route path="/loyalty" component={Loyalty} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -16,6 +16,8 @@ tags:
     description: Car wash transactions and receipts
   - name: reports
     description: Revenue reports
+  - name: loyalty
+    description: Free-wash loyalty competition tracking
 paths:
   /healthz:
     get:
@@ -174,6 +176,8 @@ paths:
                       smsStatus:
                         type: string
                         enum: [sent, failed, not_configured, not_requested]
+                      loyalty:
+                        $ref: "#/components/schemas/LoyaltyReward"
 
   /transactions/{id}:
     get:
@@ -208,6 +212,44 @@ paths:
       responses:
         "204":
           description: Deleted
+        "404":
+          description: Not found
+
+  /loyalty:
+    get:
+      operationId: listLoyalty
+      tags: [loyalty]
+      summary: List loyalty reward customers
+      description: Leaderboard of customers tracked for the free-wash reward
+      responses:
+        "200":
+          description: List of loyalty records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Loyalty"
+
+  /loyalty/{customerId}:
+    get:
+      operationId: getLoyalty
+      tags: [loyalty]
+      summary: Get a customer's loyalty progress by phone number
+      description: Returns a customer's wash count and free-wash balance
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Loyalty record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loyalty"
         "404":
           description: Not found
 
@@ -348,7 +390,7 @@ components:
 
     Transaction:
       type: object
-      required: [id, receiptNumber, serviceId, serviceName, servicePrice, customerName, vehiclePlate, vehicleType, amountPaid, paymentMethod, createdAt]
+      required: [id, receiptNumber, serviceId, serviceName, servicePrice, customerName, customerPhone, vehiclePlate, vehicleType, amountPaid, paymentMethod, createdAt]
       properties:
         id:
           type: number
@@ -362,6 +404,8 @@ components:
           type: number
         customerName:
           type: string
+        customerPhone:
+          type: ["string", "null"]
         vehiclePlate:
           type: string
         vehicleType:
@@ -396,11 +440,15 @@ components:
           type: string
         customerPhone:
           type: string
-          description: Customer phone number in international format (for example, +255688942372)
+          description: Customer phone number in international format (for example, +260971234567). Used to track free-wash loyalty rewards.
         sendSms:
           type: boolean
           default: false
           description: Send the customer an SMS receipt after the transaction is recorded
+        redeemFreeWash:
+          type: boolean
+          default: false
+          description: Redeem a previously earned free wash for this transaction (amount is charged as 0)
         notes:
           type: string
 
@@ -513,3 +561,44 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RevenueByService"
+
+    Loyalty:
+      type: object
+      required: [id, phone, customerName, washCount, freeWashesAvailable, freeWashesEarned, freeWashesRedeemed, updatedAt]
+      properties:
+        id:
+          type: number
+        phone:
+          type: string
+        customerName:
+          type: string
+        washCount:
+          type: number
+          description: Paid washes completed toward the next free wash
+        freeWashesAvailable:
+          type: number
+        freeWashesEarned:
+          type: number
+        freeWashesRedeemed:
+          type: number
+        updatedAt:
+          type: string
+
+    LoyaltyReward:
+      type: object
+      required: [washCount, freeWashesAvailable, freeWashEarned, freeWashSmsStatus, redeemedFreeWash]
+      properties:
+        washCount:
+          type: number
+          description: Paid washes completed toward the next free wash
+        freeWashesAvailable:
+          type: number
+        freeWashEarned:
+          type: boolean
+          description: Whether this transaction earned the customer a free wash
+        freeWashSmsStatus:
+          type: string
+          enum: [sent, failed, not_configured, not_requested]
+        redeemedFreeWash:
+          type: boolean
+          description: Whether this transaction was a redeemed free wash
