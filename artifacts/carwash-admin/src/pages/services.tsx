@@ -45,6 +45,8 @@ const serviceSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().min(1, 'Description is required'),
   price: z.string().min(1, 'Price is required'),
+  priceSuv: z.string().optional(),
+  priceTruck: z.string().optional(),
   isActive: z.boolean(),
 });
 
@@ -70,6 +72,8 @@ export default function Services() {
       name: '',
       description: '',
       price: '',
+      priceSuv: '',
+      priceTruck: '',
       isActive: true,
     },
   });
@@ -81,6 +85,8 @@ export default function Services() {
           name: values.name,
           description: values.description,
           price: Number(values.price),
+          priceSuv: values.priceSuv ? Number(values.priceSuv) : undefined,
+          priceTruck: values.priceTruck ? Number(values.priceTruck) : undefined,
           isActive: values.isActive,
         },
       },
@@ -112,6 +118,8 @@ export default function Services() {
           name: values.name,
           description: values.description,
           price: Number(values.price),
+          priceSuv: values.priceSuv ? Number(values.priceSuv) : undefined,
+          priceTruck: values.priceTruck ? Number(values.priceTruck) : undefined,
           isActive: values.isActive,
         },
       },
@@ -162,6 +170,8 @@ export default function Services() {
         name: service.name,
         description: service.description,
         price: service.price.toString(),
+        priceSuv: service.priceSuv != null ? service.priceSuv.toString() : '',
+        priceTruck: service.priceTruck != null ? service.priceTruck.toString() : '',
         isActive: service.isActive,
       });
       setEditingService(serviceId);
@@ -226,7 +236,7 @@ export default function Services() {
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Price</FormLabel>
+                        <FormLabel>Price - Small Car</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -240,6 +250,34 @@ export default function Services() {
                       </FormItem>
                     )}
                   />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="priceSuv"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Price - SUV / 4x4</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" placeholder="Optional" {...field} data-testid="input-service-price-suv" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="priceTruck"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Price - Truck / Bus</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" placeholder="Optional" {...field} data-testid="input-service-price-truck" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
                     control={form.control}
                     name="isActive"
@@ -325,6 +363,15 @@ export default function Services() {
                     <p className="text-2xl font-mono font-bold text-primary">
                       {formatCurrency(service.price)}
                     </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                      <span className="font-medium text-foreground">Car: {formatCurrency(service.price)}</span>
+                      {service.priceSuv != null && (
+                        <span>SUV / 4x4: {formatCurrency(service.priceSuv)}</span>
+                      )}
+                      {service.priceTruck != null && (
+                        <span>Truck / Bus: {formatCurrency(service.priceTruck)}</span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-2 ml-4">
                     <Button
@@ -393,7 +440,7 @@ export default function Services() {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price</FormLabel>
+                    <FormLabel>Price - Small Car</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" {...field} data-testid="input-edit-price" />
                     </FormControl>
@@ -401,6 +448,34 @@ export default function Services() {
                   </FormItem>
                 )}
               />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="priceSuv"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price - SUV / 4x4</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" placeholder="Optional" {...field} data-testid="input-edit-price-suv" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="priceTruck"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price - Truck / Bus</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" placeholder="Optional" {...field} data-testid="input-edit-price-truck" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <FormField
                 control={form.control}
                 name="isActive"

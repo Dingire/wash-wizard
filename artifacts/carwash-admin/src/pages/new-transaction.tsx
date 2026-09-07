@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form';
+import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateTransaction, useListServices, getListLoyaltyQueryKey } from '@workspace/api-client-react';
@@ -67,6 +68,14 @@ const formSchema = z.object({
   }
 });
 
+type ServicePricing = { price: number; priceSuv?: number | null; priceTruck?: number | null };
+
+function tierPrice(service: ServicePricing, vehicleType: string): number {
+  if (vehicleType === 'SUV' || vehicleType === 'Van') return service.priceSuv ?? service.price;
+  if (vehicleType === 'Truck') return service.priceTruck ?? service.price;
+  return service.price;
+}
+
 export default function NewTransaction() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -94,11 +103,14 @@ export default function NewTransaction() {
   const selectedServiceId = form.watch('serviceId');
   const selectedService = services?.find((s) => s.id === Number(selectedServiceId));
   const redeemFreeWash = form.watch('redeemFreeWash');
+  const vehicleType = form.watch('vehicleType');
 
-  // Auto-fill amount when service is selected
-  if (selectedService && !form.getValues('amountPaid')) {
-    form.setValue('amountPaid', selectedService.price.toString());
-  }
+  // Auto-fill amount based on the selected service and vehicle type price tier.
+  useEffect(() => {
+    if (redeemFreeWash || !selectedService) return;
+    form.setValue('amountPaid', String(tierPrice(selectedService, vehicleType)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedServiceId, vehicleType, redeemFreeWash]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     createTransaction.mutate(

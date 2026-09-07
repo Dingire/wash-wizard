@@ -354,6 +354,10 @@ components:
           type: string
         price:
           type: number
+        priceSuv:
+          type: ["number", "null"]
+        priceTruck:
+          type: ["number", "null"]
         isActive:
           type: boolean
         createdAt:
@@ -371,6 +375,12 @@ components:
         price:
           type: number
           minimum: 0
+        priceSuv:
+          type: ["number", "null"]
+          minimum: 0
+        priceTruck:
+          type: ["number", "null"]
+          minimum: 0
         isActive:
           type: boolean
 
@@ -384,6 +394,12 @@ components:
           type: string
         price:
           type: number
+          minimum: 0
+        priceSuv:
+          type: ["number", "null"]
+          minimum: 0
+        priceTruck:
+          type: ["number", "null"]
           minimum: 0
         isActive:
           type: boolean

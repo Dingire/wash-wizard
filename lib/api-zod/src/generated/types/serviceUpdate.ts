@@ -12,5 +12,15 @@ export interface ServiceUpdate {
   description?: string;
   /** @minimum 0 */
   price?: number;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  priceSuv?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  priceTruck?: number | null;
   isActive?: boolean;
 }

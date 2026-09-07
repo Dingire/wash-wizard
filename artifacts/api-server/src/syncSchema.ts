@@ -9,10 +9,14 @@ const statements = [
     name TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
     price NUMERIC(10, 2) NOT NULL,
+    price_suv NUMERIC(10, 2),
+    price_truck NUMERIC(10, 2),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`,
+  `ALTER TABLE services ADD COLUMN IF NOT EXISTS price_suv NUMERIC(10, 2)`,
+  `ALTER TABLE services ADD COLUMN IF NOT EXISTS price_truck NUMERIC(10, 2)`,
   `CREATE TABLE IF NOT EXISTS transactions (
     id SERIAL PRIMARY KEY,
     receipt_number TEXT NOT NULL UNIQUE,

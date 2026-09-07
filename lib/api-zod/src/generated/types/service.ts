@@ -11,6 +11,10 @@ export interface Service {
   name: string;
   description: string;
   price: number;
+  /** @nullable */
+  priceSuv?: number | null;
+  /** @nullable */
+  priceTruck?: number | null;
   isActive: boolean;
   createdAt: string;
 }

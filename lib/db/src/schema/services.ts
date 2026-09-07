@@ -7,6 +7,8 @@ export const servicesTable = pgTable("services", {
   name: text("name").notNull(),
   description: text("description").notNull().default(""),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+  priceSuv: numeric("price_suv", { precision: 10, scale: 2 }),
+  priceTruck: numeric("price_truck", { precision: 10, scale: 2 }),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),

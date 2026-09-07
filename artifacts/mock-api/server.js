@@ -9,13 +9,21 @@ let transactionId = 1;
 let loyaltyId = 1;
 
 const services = [
-  { id: serviceId++, name: 'Basic Wash', description: 'Exterior wash', price: 5.0, isActive: true, createdAt: new Date().toISOString() },
-  { id: serviceId++, name: 'Premium Wash', description: 'Exterior + interior', price: 12.5, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Exterior Wash', description: 'Exterior wash', price: 50, priceSuv: 70, priceTruck: 100, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Interior Wash', description: 'Interior wash', price: 60, priceSuv: 80, priceTruck: 110, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Full Wash', description: 'Inside & outside wash', price: 80, priceSuv: 100, priceTruck: 150, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Engine Wash', description: 'Engine bay degrease and clean', price: 70, priceSuv: 80, priceTruck: 160, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Polishing with 1-2 Years Paint Protection', description: 'Machine polish with 1-2 years paint protection', price: 1500, priceSuv: 2000, priceTruck: 2500, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Full Valet & Steaming', description: 'Full valet and steam clean', price: 800, priceSuv: 1200, priceTruck: 1500, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Seat Cover Installation', description: 'Seat cover fitting', price: 50, priceSuv: 60, priceTruck: 80, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Dashboard Polish', description: 'Dashboard dressing and polish', price: 150, priceSuv: 150, priceTruck: 200, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Rim Cleaning', description: 'Rim deep cleaning', price: 300, priceSuv: 300, priceTruck: 400, isActive: true, createdAt: new Date().toISOString() },
+  { id: serviceId++, name: 'Roof Lining Cleaning', description: 'Roof lining wash and clean', price: 80, priceSuv: 100, priceTruck: 200, isActive: true, createdAt: new Date().toISOString() },
 ];
 
 const transactions = [
-  { id: transactionId++, receiptNumber: '1001', serviceId: 1, serviceName: 'Basic Wash', servicePrice: 5.0, customerName: 'Alice', customerPhone: null, vehiclePlate: 'ABC-123', vehicleType: 'Sedan', amountPaid: 5.0, paymentMethod: 'Cash', notes: null, createdAt: new Date().toISOString() },
-  { id: transactionId++, receiptNumber: '1002', serviceId: 2, serviceName: 'Premium Wash', servicePrice: 12.5, customerName: 'Bob', customerPhone: '260971111111', vehiclePlate: 'XYZ-789', vehicleType: 'SUV', amountPaid: 12.5, paymentMethod: 'Card', notes: null, createdAt: new Date().toISOString() },
+  { id: transactionId++, receiptNumber: '1001', serviceId: 1, serviceName: 'Exterior Wash', servicePrice: 50, customerName: 'Alice', customerPhone: null, vehiclePlate: 'ABC-123', vehicleType: 'Sedan', amountPaid: 50, paymentMethod: 'Cash', notes: null, createdAt: new Date().toISOString() },
+  { id: transactionId++, receiptNumber: '1002', serviceId: 2, serviceName: 'Interior Wash', servicePrice: 60, customerName: 'Bob', customerPhone: '260971111111', vehiclePlate: 'XYZ-789', vehicleType: 'SUV', amountPaid: 80, paymentMethod: 'Card', notes: null, createdAt: new Date().toISOString() },
 ];
 
 // phone -> loyalty record (mirrors the real API's free-wash competition)
@@ -33,11 +41,17 @@ app.get('/api/services', (_req, res) => {
 });
 
 app.post('/api/services', (req, res) => {
-  const { name, description = '', price, isActive = true } = req.body || {};
+  const { name, description = '', price, priceSuv = null, priceTruck = null, isActive = true } = req.body || {};
   if (!name || price == null) {
     return res.status(400).json({ error: 'name and price required' });
   }
-  const newService = { id: serviceId++, name, description, price: Number(price), isActive, createdAt: new Date().toISOString() };
+  const newService = {
+    id: serviceId++, name, description,
+    price: Number(price),
+    priceSuv: priceSuv != null ? Number(priceSuv) : null,
+    priceTruck: priceTruck != null ? Number(priceTruck) : null,
+    isActive, createdAt: new Date().toISOString(),
+  };
   services.push(newService);
   res.status(201).json(newService);
 });

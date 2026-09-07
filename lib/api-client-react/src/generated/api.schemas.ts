@@ -14,6 +14,10 @@ export interface Service {
   name: string;
   description: string;
   price: number;
+  /** @nullable */
+  priceSuv?: number | null;
+  /** @nullable */
+  priceTruck?: number | null;
   isActive: boolean;
   createdAt: string;
 }
@@ -24,6 +28,16 @@ export interface ServiceInput {
   description: string;
   /** @minimum 0 */
   price: number;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  priceSuv?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  priceTruck?: number | null;
   isActive?: boolean;
 }
 
@@ -33,6 +47,16 @@ export interface ServiceUpdate {
   description?: string;
   /** @minimum 0 */
   price?: number;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  priceSuv?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  priceTruck?: number | null;
   isActive?: boolean;
 }
 

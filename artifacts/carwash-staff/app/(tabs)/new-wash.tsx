@@ -24,6 +24,14 @@ type PaymentMethod = 'Cash' | 'Mobile Money' | 'Card';
 const VEHICLE_TYPES: VehicleType[] = ['Car', 'SUV', 'Truck', 'Minibus', 'Other'];
 const PAYMENT_METHODS: PaymentMethod[] = ['Cash', 'Mobile Money', 'Card'];
 
+type ServicePricing = { price: number; priceSuv?: number | null; priceTruck?: number | null };
+
+const tierPrice = (service: ServicePricing, vehicleType: VehicleType): number => {
+  if (vehicleType === 'SUV' || vehicleType === 'Minibus') return service.priceSuv ?? service.price;
+  if (vehicleType === 'Truck') return service.priceTruck ?? service.price;
+  return service.price;
+};
+
 interface SuccessState {
   receiptNumber: string;
   customerName: string;
@@ -101,7 +109,7 @@ export default function NewWashScreen() {
           redeemFreeWash,
           vehiclePlate: vehiclePlate.trim().toUpperCase(),
           vehicleType,
-          amountPaid: selectedService.price,
+          amountPaid: tierPrice(selectedService, vehicleType),
           paymentMethod,
           notes: notes.trim() || undefined,
         },
@@ -240,7 +248,7 @@ export default function NewWashScreen() {
               <Text style={styles.serviceFieldName} numberOfLines={1}>
                 {selectedService.name}
               </Text>
-              <Text style={styles.serviceFieldPrice}>{formatCurrency(selectedService.price)}</Text>
+              <Text style={styles.serviceFieldPrice}>{formatCurrency(tierPrice(selectedService, vehicleType))}</Text>
             </View>
             <Feather name="chevron-down" size={18} color={colors.mutedForeground} />
           </>

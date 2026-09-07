@@ -542,7 +542,14 @@ importers:
         specifier: ^3.4.0
         version: 3.5.4(zod@3.25.76)
 
-  artifacts/mock-api: {}
+  artifacts/mock-api:
+    dependencies:
+      cors:
+        specifier: ^2.8.6
+        version: 2.8.6
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1(supports-color@8.1.1)
 
   artifacts/mockup-sandbox:
     devDependencies:
@@ -771,6 +778,13 @@ importers:
         version: 0.31.10
 
   scripts:
+    dependencies:
+      '@workspace/db':
+        specifier: workspace:*
+        version: link:../lib/db
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@types/pg@8.20.0)(pg@8.22.0)
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

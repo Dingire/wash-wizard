@@ -25,6 +25,8 @@ export const ListServicesResponseItem = zod.object({
   "name": zod.string(),
   "description": zod.string(),
   "price": zod.number(),
+  "priceSuv": zod.number().nullish(),
+  "priceTruck": zod.number().nullish(),
   "isActive": zod.boolean(),
   "createdAt": zod.string()
 })
@@ -37,12 +39,18 @@ export const ListServicesResponse = zod.array(ListServicesResponseItem)
 
 export const createServiceBodyPriceMin = 0;
 
+export const createServiceBodyPriceSuvMin = 0;
+
+export const createServiceBodyPriceTruckMin = 0;
+
 
 
 export const CreateServiceBody = zod.object({
   "name": zod.string().min(1),
   "description": zod.string(),
   "price": zod.number().min(createServiceBodyPriceMin),
+  "priceSuv": zod.number().min(createServiceBodyPriceSuvMin).nullish(),
+  "priceTruck": zod.number().min(createServiceBodyPriceTruckMin).nullish(),
   "isActive": zod.boolean().optional()
 })
 
@@ -51,6 +59,8 @@ export const CreateServiceResponse = zod.object({
   "name": zod.string(),
   "description": zod.string(),
   "price": zod.number(),
+  "priceSuv": zod.number().nullish(),
+  "priceTruck": zod.number().nullish(),
   "isActive": zod.boolean(),
   "createdAt": zod.string()
 })
@@ -68,6 +78,8 @@ export const GetServiceResponse = zod.object({
   "name": zod.string(),
   "description": zod.string(),
   "price": zod.number(),
+  "priceSuv": zod.number().nullish(),
+  "priceTruck": zod.number().nullish(),
   "isActive": zod.boolean(),
   "createdAt": zod.string()
 })
@@ -83,12 +95,18 @@ export const UpdateServiceParams = zod.object({
 
 export const updateServiceBodyPriceMin = 0;
 
+export const updateServiceBodyPriceSuvMin = 0;
+
+export const updateServiceBodyPriceTruckMin = 0;
+
 
 
 export const UpdateServiceBody = zod.object({
   "name": zod.string().min(1).optional(),
   "description": zod.string().optional(),
   "price": zod.number().min(updateServiceBodyPriceMin).optional(),
+  "priceSuv": zod.number().min(updateServiceBodyPriceSuvMin).nullish(),
+  "priceTruck": zod.number().min(updateServiceBodyPriceTruckMin).nullish(),
   "isActive": zod.boolean().optional()
 })
 
@@ -97,6 +115,8 @@ export const UpdateServiceResponse = zod.object({
   "name": zod.string(),
   "description": zod.string(),
   "price": zod.number(),
+  "priceSuv": zod.number().nullish(),
+  "priceTruck": zod.number().nullish(),
   "isActive": zod.boolean(),
   "createdAt": zod.string()
 })
