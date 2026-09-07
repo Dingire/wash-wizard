@@ -112,15 +112,25 @@ router.delete("/services/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [service] = await db
-    .delete(servicesTable)
-    .where(eq(servicesTable.id, params.data.id))
-    .returning();
-  if (!service) {
-    res.status(404).json({ error: "Service not found" });
-    return;
+  try {
+    const [service] = await db
+      .delete(servicesTable)
+      .where(eq(servicesTable.id, params.data.id))
+      .returning();
+    if (!service) {
+      res.status(404).json({ error: "Service not found" });
+      return;
+    }
+    res.sendStatus(204);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && (error as { code: string }).code === "23503") {
+      res.status(409).json({
+        error: "Cannot delete this service — it is referenced by existing transactions. Deactivate it instead.",
+      });
+      return;
+    }
+    throw error;
   }
-  res.sendStatus(204);
 });
 
 export default router;
