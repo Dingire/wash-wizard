@@ -20,6 +20,9 @@ export default defineRailway(() => {
       PGSSLMODE: "require",
       PNPM_CONFIG_FROZEN_LOCKFILE: "false",
       NPM_CONFIG_FROZEN_LOCKFILE: "false",
+      ZEDBITE_SMS_UID: "COO0DO85LV",
+      ZEDBITE_SMS_SENDER_ID: "GENAUTH",
+      ZEDBITE_SMS_API_KEY: "b53e50d3a7a72fbc403c974ccaf0c1caae507fa544943170712bc49a81718a19",
     },
   });
 

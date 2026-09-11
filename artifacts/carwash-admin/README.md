@@ -1,4 +1,4 @@
-# U & ME Car Wash Admin Portal
+# Car Detailers Admin Portal
 
 A professional admin dashboard for managing car wash operations, tracking revenue, and issuing receipts.
 

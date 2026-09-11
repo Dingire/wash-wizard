@@ -104,7 +104,7 @@ export async function sendLoyaltyWinSms(win: LoyaltyWinSms): Promise<SmsStatus> 
 
   const message = [
     `Congratulations, ${win.customerName}!`,
-    `You have completed ${win.washesCompleted} car washes at U & ME Car Wash.`,
+    `You have completed ${win.washesCompleted} car washes at Car Detailers.`,
     "You have won a FREE car wash!",
     "Present this SMS at our car wash to claim your free wash.",
   ].join("\n");

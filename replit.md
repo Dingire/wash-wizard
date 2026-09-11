@@ -1,6 +1,6 @@
-# U & ME Car Wash
+# Car Detailers
 
-Admin portal for U & ME Car Wash — manage transactions, issue receipts, and track daily/weekly/monthly revenue.
+Admin portal for Car Detailers — manage transactions, issue receipts, and track daily/weekly/monthly revenue.
 
 ## Run & Operate
 
